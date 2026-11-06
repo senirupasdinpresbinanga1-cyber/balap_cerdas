@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Balap Cerdas - Seni Rupa Kelas 4</title>
+  <title>Balap Cerdas - Seni Rupa</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
@@ -11,12 +11,13 @@
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.4s ease-in-out; }
     .fullscreen-overlay { display: none; }
-    body:not(:fullscreen) .fullscreen-overlay { display: flex; }
+    /* Fullscreen overlay hanya aktif jika permainan sudah dimulai */
+    body.game-started:not(:fullscreen) .fullscreen-overlay { display: flex; }
   </style>
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
 
-  <!-- OVERLAY JIKA KELUAR FULLSCREEN -->
+  <!-- OVERLAY JIKA KELUAR FULLSCREEN SETELAH GAME DIMULAI -->
   <div id="fullscreenNotice" class="fullscreen-overlay fixed inset-0 bg-red-900/90 z-50 flex-col items-center justify-center text-center p-6 backdrop-blur-md">
     <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
     <p class="text-xl mb-6">Layar harus dalam mode Fullscreen untuk melanjutkan permainan!</p>
@@ -25,19 +26,33 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI KELAS 4 (TAHAP 1) -->
-  <div id="materiModal" class="fixed inset-0 bg-slate-900/95 z-40 flex flex-col p-8 overflow-y-auto">
-    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA KELAS 4</h1>
-    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
-      <p><b>1. Unsur-Unsur Seni Rupa:</b> Titik (dasar/terkecil), Garis (gabungan titik), Bidang (2D dibatasi garis), Bentuk (3D bervolume), Warna, Tekstur (nilai raba), dan Gelap Terang.</p>
-      <p><b>2. Pengelompokan Warna:</b> Warna Primer (Merah, Kuning, Biru) dan Warna Sekunder hasil campuran (Hijau dari Biru+Kuning, Oranye dari Merah+Kuning, Ungu dari Merah+Biru).</p>
-      <p><b>3. Seni Rupa 2 Dimensi & 3 Dimensi:</b> 2D memiliki panjang & lebar saja (contoh: lukisan, batik, kolase). 3D memiliki panjang, lebar, tinggi, serta volume (contoh: patung, vas bunga).</p>
-      <p><b>4. Prinsip & Teknik Dasar:</b> Keseimbangan (Balance), Kesatuan (Unity), Irama, serta teknik Kolase, Mozaik, dan Membentuk.</p>
-      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat materi di atas ke buku catatan Anda sebelum permainan dimulai!</p>
+  <!-- MODAL CATATAN MATERI (TIDAK FULLSCREEN) -->
+  <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
+    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
+    
+    <!-- TEMPAT PASTE CATATAN SENDIRI DI SINI -->
+    <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
+      <p><b>1. Imajinasi & Kemampuan Berpikir Kreatif:</b> Imajinasi adalah kemampuan membayangkan atau menciptakan gambaran dalam pikiran untuk menghasilkan ide baru dalam berkarya.</p>
+      <p><b>2. Karya Maket:</b> Maket adalah miniatur atau tiruan suatu bangunan atau objek yang dibuat dengan ukuran lebih kecil dari ukuran sebenarnya. Bahan pembuatannya dapat berupa kardus, karton, dan lem.</p>
+      <p><b>3. Langkah Membuat Karya:</b> Menentukan tema, membuat sketsa rancangan awal, mengukur bahan, memotong, merangkai dengan lem, dan memberikan warna/hiasan.</p>
+      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat poin-poin materi di atas ke buku catatan Anda sebelum permainan dimulai!</p>
     </div>
+
     <div class="text-center mt-6">
-      <button onclick="mulaiPermainanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-2xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
-        MULAI GAME BALAP 🚀
+      <button onclick="bukaPersiapanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-2xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
+        LANJUT KE PERSIAPAN SESI 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL PERSIAPAN SESI (MUNCUL 4 NAMA SISWA SEBELUM MULAI) -->
+  <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
+    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6">
+      <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
+      <p class="text-slate-300">Berikut adalah 4 siswa yang terpilih untuk bertanding pada sesi ini:</p>
+      <div id="listSiswaPersiapan" class="grid grid-cols-2 gap-3 text-lg font-bold"></div>
+      <button onclick="mulaiGameSesiIni()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-black text-xl py-4 rounded-xl shadow-lg transition">
+        MULAI GAME SEKARANG 🏁
       </button>
     </div>
   </div>
@@ -47,7 +62,7 @@
     <!-- HEADER & TIMER -->
     <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
       <div>
-        <h2 class="text-xl font-bold text-yellow-400" id="infoSesi">Sesi 1</h2>
+        <h2 class="text-xl font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
       </div>
       <div class="text-3xl font-black tracking-wider text-cyan-400" id="timer">10:00</div>
       <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
@@ -55,7 +70,6 @@
 
     <!-- AREA BALAPAN (ARENA 4 KARAKTER) -->
     <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
-      <!-- Track Steps Background -->
       <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
@@ -68,8 +82,6 @@
         <div class="track-line h-full w-1/10"></div>
         <div class="h-full border-r-4 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-sm">FINISH</span></div>
       </div>
-
-      <!-- Player Lines (Max 4) -->
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
@@ -90,7 +102,7 @@
             <th class="p-2">Nama Siswa</th>
             <th class="p-2">Soal Terjawab</th>
             <th class="p-2">Nilai Akhir</th>
-            <th class="p-2">Waktu</th>
+            <th class="p-2">Waktu Pengerjaan</th>
           </tr>
         </thead>
         <tbody id="leaderboardBody"></tbody>
@@ -108,46 +120,18 @@
   </div>
 
   <script>
-    // URL Web App Google Apps Script yang Anda berikan
     const API_URL = "https://script.google.com/macros/s/AKfycbzIa56uxdydc8_w6iSWPX09bG6xtRP8D9p6cwuCorb5yo-I0gnThusAE20cGl71QIQe/exec";
 
-    // Bank 50 Soal Seni Rupa Kelas 4 SD
-    const bankSoal = [
-      { q: "Unsur seni rupa yang paling dasar dan terkecil adalah...", a: ["Titik", "Garis", "Bidang", "Warna"], c: 0 },
-      { q: "Gabungan dari titik-titik yang ditarik memanjang disebut...", a: ["Titik", "Garis", "Tekstur", "Volume"], c: 1 },
-      { q: "Manakah yang termasuk kelompok warna primer (pokok)?", a: ["Merah, Kuning, Biru", "Hijau, Ungu, Oranye", "Merah, Hitam, Putih", "Biru, Hijau, Kuning"], c: 0 },
-      { q: "Campuran warna Merah dan Kuning akan menghasilkan warna...", a: ["Hijau", "Ungu", "Oranye / Jingga", "Cokelat"], c: 2 },
-      { q: "Campuran warna Biru dan Kuning akan menghasilkan warna...", a: ["Hijau", "Ungu", "Oranye", "Merah"], c: 0 },
-      { q: "Karya seni rupa yang hanya memiliki ukuran panjang dan lebar saja disebut...", a: ["Seni rupa 1 dimensi", "Seni rupa 2 dimensi", "Seni rupa 3 dimensi", "Seni rupa murni"], c: 1 },
-      { q: "Contoh karya seni rupa 2 dimensi adalah...", a: ["Patung", "Vas bunga", "Lukisan / Gambar", "Topeng"], c: 2 },
-      { q: "Karya seni rupa yang memiliki volume atau ruang serta dapat dilihat dari berbagai arah disebut...", a: ["Seni rupa 2 dimensi", "Seni rupa 3 dimensi", "Seni rupa garis", "Seni rupa sketsa"], c: 1 },
-      { q: "Kesan rabaan dari suatu permukaan benda (halus atau kasar) disebut...", a: ["Warna", "Tekstur", "Bidang", "Titik"], c: 1 },
-      { q: "Campuran warna Merah dan Biru menghasilkan warna...", a: ["Hijau", "Ungu", "Oranye", "Kuning"], c: 1 },
-      { q: "Batik termasuk ke dalam contoh karya seni rupa...", a: ["2 Dimensi", "3 Dimensi", "Seni bangunan", "Seni kriya patung"], c: 0 },
-      { q: "Teknik menempelkan berbagai macam bahan (kain, kertas) pada permukaan pola disebut...", a: ["Teknik Mozaik", "Teknik Kolase", "Teknik Melukis", "Teknik Memahat"], c: 1 },
-      { q: "Teknik menempelkan kepingan bahan kecil sejenis (pecahan keramik/kertas kecil) disebut...", a: ["Teknik Mozaik", "Teknik Kolase", "Teknik Menggambar", "Teknik Pahat"], c: 0 },
-      { q: "Unsur gelap terang pada gambar berfungsi untuk memberikan kesan...", a: ["Warna-warni", "Kedalaman / Volume", "Keramaian", "Kasar benda"], c: 1 },
-      { q: "Perbandingan ukuran ideal antara bagian objek satu dengan lainnya disebut...", a: ["Keseimbangan", "Proporsi", "Irama", "Kesatuan"], c: 1 }
-    ];
-
-    // Lengkapi hingga 50 soal dengan variasi seputar seni rupa kelas 4
-    for (let i = 16; i <= 50; i++) {
-      bankSoal.push({
-        q: `[Soal ${i}] Manakah yang merupakan unsur visual utama dalam seni rupa?`,
-        a: ["Garis dan Warna", "Suara dan Nada", "Gerak dan Tari", "Aroma dan Rasa"],
-        c: 0
-      });
-    }
-
+    let bankSoal = [];
     let semuaSiswa = [];
     let siswaAntrean = [];
     let pemainAktif = [];
     let sesiKe = 1;
     let timerInterval = null;
-    let waktuDetik = 600; // 10 menit
+    let waktuDetik = 600;
     let hasilSemuaSesi = [];
+    let kelompokSementara = [];
 
-    // Web Audio API untuk Efek Suara
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(freq, duration) {
       try {
@@ -162,7 +146,6 @@
       } catch(e) {}
     }
 
-    // Fungsi Fullscreen Handler
     function requestFullScreen() {
       let doc = document.documentElement;
       if (doc.requestFullscreen) doc.requestFullscreen();
@@ -170,30 +153,58 @@
       else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
     }
 
-    // Ambil Data Siswa dari Spreadsheet Apps Script
     async function initData() {
       try {
-        let res = await fetch(API_URL + "?action=getSiswa");
-        semuaSiswa = await res.json();
+        // Ambil Data Siswa yang belum ada nilainya
+        let resSiswa = await fetch(API_URL + "?action=getSiswa");
+        semuaSiswa = await resSiswa.json();
+
+        // Ambil Data Soal dari Sheet "Soal"
+        let resSoal = await fetch(API_URL + "?action=getSoal");
+        bankSoal = await resSoal.json();
       } catch (err) {
-        semuaSiswa = ["Ahmad", "Budi", "Citra", "Dewi", "Eko", "Fani", "Gilang", "Hana"];
+        console.log("Gagal memuat data dari Spreadsheet, menggunakan fallback.", err);
       }
+
+      // Acak urutan siswa yang siap bertanding
       siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
     }
     initData();
 
-    function mulaiPermainanSesi() {
-      requestFullScreen();
-      document.getElementById("materiModal").classList.add("hidden");
-
+    function bukaPersiapanSesi() {
       if (siswaAntrean.length === 0) {
         alert("Semua siswa sudah memiliki nilai / antrean habis!");
         tampilkanLeaderboard();
         return;
       }
 
-      let kelompok = siswaAntrean.splice(0, 4);
-      pemainAktif = kelompok.map((nama, idx) => ({
+      if (bankSoal.length === 0) {
+        alert("Soal dari Sheet 'Soal' belum berhasil dimuat. Pastikan Sheet 'Soal' sudah terisi!");
+      }
+
+      kelompokSementara = siswaAntrean.splice(0, 4);
+
+      document.getElementById("materiModal").classList.add("hidden");
+      document.getElementById("infoSesiTitle").innerText = `SESI ${sesiKe} - BERSIAP`;
+      
+      const listContainer = document.getElementById("listSiswaPersiapan");
+      listContainer.innerHTML = "";
+      kelompokSementara.forEach((nama, idx) => {
+        listContainer.innerHTML += `<div class="bg-slate-700 p-3 rounded-lg text-cyan-300">Player ${idx + 1}: ${nama}</div>`;
+      });
+
+      document.getElementById("persiapanModal").classList.remove("hidden");
+      document.getElementById("persiapanModal").classList.add("flex");
+    }
+
+    function mulaiGameSesiIni() {
+      requestFullScreen();
+      document.body.classList.add("game-started");
+
+      document.getElementById("persiapanModal").classList.remove("flex");
+      document.getElementById("persiapanModal").classList.add("hidden");
+
+      pemainAktif = kelompokSementara.map((nama, idx) => ({
         id: idx,
         nama: nama,
         langkah: 0,
@@ -203,7 +214,7 @@
         soalIndex: 0
       }));
 
-      document.getElementById("infoSesi").innerText = `Sesi ${sesiKe} (Jumlah Siswa: ${pemainAktif.length})`;
+      document.getElementById("infoSesiHeader").innerText = `Sesi ${sesiKe} (Jumlah Siswa: ${pemainAktif.length})`;
       renderArena();
       renderSoal();
       startTimer();
@@ -341,8 +352,8 @@
 
       if (siswaAntrean.length > 0) {
         sesiKe++;
-        alert(`Sesi ${sesiKe - 1} Selesai! Klik OK untuk melanjutkan ke Sesi ${sesiKe}.`);
-        mulaiPermainanSesi();
+        alert(`Sesi ${sesiKe - 1} Selesai! Klik OK untuk melanjutkan ke Sesi berikutnya.`);
+        bukaPersiapanSesi();
       } else {
         selesaikanSemuaSesi();
       }
@@ -399,7 +410,7 @@
       const element = document.getElementById("pdfContent");
       html2pdf().from(element).set({
         margin: 10,
-        filename: 'Hasil_Balap_Cerdas_SeniRupa_Kelas4.pdf',
+        filename: 'Hasil_Balap_Cerdas_SeniRupa.pdf',
         html2canvas: { scale: 2 },
         jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
       }).save();
