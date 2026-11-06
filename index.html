@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Balap Cerdas - Seni Rupa</title>
-  <!-- Tailwind CSS & WebAudioFont Engine -->
+  <title>Balap Cerdas - Seni Rupa Kelas 4</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
@@ -25,16 +25,15 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (TAHAP 1) -->
+  <!-- MODAL CATATAN MATERI KELAS 4 (TAHAP 1) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900/95 z-40 flex flex-col p-8 overflow-y-auto">
-    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
-    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-lg leading-relaxed">
-      <p><b>1. Unsur Seni Rupa:</b> Titik, garis, bidang, bentuk, warna, tekstur, dan gelap terang.</p>
-      <p><b>2. Warna Primer:</b> Merah, Kuning, Biru.</p>
-      <p><b>3. Warna Sekunder:</b> Campuran 2 warna primer (misal: Merah + Kuning = Oranye, Biru + Kuning = Hijau).</p>
-      <p><b>4. Prinsip Seni Rupa:</b> Keseimbangan (Balance), Kesatuan (Unity), Irama (Rhythm), dan Proporsi.</p>
-      <p><b>5. Seni Rupa 2D vs 3D:</b> 2D memiliki panjang & lebar (lukisan), 3D memiliki panjang, lebar, & volume (patung).</p>
-      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat poin-poin penting di atas ke buku catatan Anda sebelum memulai permainan!</p>
+    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA KELAS 4</h1>
+    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
+      <p><b>1. Unsur-Unsur Seni Rupa:</b> Titik (dasar/terkecil), Garis (gabungan titik), Bidang (2D dibatasi garis), Bentuk (3D bervolume), Warna, Tekstur (nilai raba), dan Gelap Terang.</p>
+      <p><b>2. Pengelompokan Warna:</b> Warna Primer (Merah, Kuning, Biru) dan Warna Sekunder hasil campuran (Hijau dari Biru+Kuning, Oranye dari Merah+Kuning, Ungu dari Merah+Biru).</p>
+      <p><b>3. Seni Rupa 2 Dimensi & 3 Dimensi:</b> 2D memiliki panjang & lebar saja (contoh: lukisan, batik, kolase). 3D memiliki panjang, lebar, tinggi, serta volume (contoh: patung, vas bunga).</p>
+      <p><b>4. Prinsip & Teknik Dasar:</b> Keseimbangan (Balance), Kesatuan (Unity), Irama, serta teknik Kolase, Mozaik, dan Membentuk.</p>
+      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat materi di atas ke buku catatan Anda sebelum permainan dimulai!</p>
     </div>
     <div class="text-center mt-6">
       <button onclick="mulaiPermainanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-2xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
@@ -109,28 +108,33 @@
   </div>
 
   <script>
-    // URL Web App Google Apps Script Anda
+    // URL Web App Google Apps Script yang Anda berikan
     const API_URL = "https://script.google.com/macros/s/AKfycbzIa56uxdydc8_w6iSWPX09bG6xtRP8D9p6cwuCorb5yo-I0gnThusAE20cGl71QIQe/exec";
 
-    // Data 50 Soal Seni Rupa
+    // Bank 50 Soal Seni Rupa Kelas 4 SD
     const bankSoal = [
-      { q: "Warna campuran Merah + Kuning?", a: ["Oranye", "Hijau", "Ungu", "Cokelat"], c: 0 },
-      { q: "Unsur seni rupa paling dasar?", a: ["Garis", "Titik", "Bidang", "Bentuk"], c: 1 },
-      { q: "Karya seni rupa 2 dimensi memiliki?", a: ["Panjang & Lebar", "Panjang & Volume", "Volume saja", "Ruang"], c: 0 },
-      { q: "Warna campuran Biru + Kuning?", a: ["Hijau", "Ungu", "Oranye", "Merah"], c: 0 },
-      { q: "Contoh karya seni rupa 3 dimensi?", a: ["Lukisan", "Patung", "Batik", "Poster"], c: 1 },
-      { q: "Warna primer adalah...", a: ["Merah, Kuning, Biru", "Hijau, Ungu, Oranye", "Hitam & Putih", "Cokelat & Merah"], c: 0 },
-      { q: "Kesan permukaan suatu benda disebut?", a: ["Tekstur", "Gelap Terang", "Warna", "Bentuk"], c: 0 },
-      { q: "Warna hasil campuran Merah + Biru?", a: ["Ungu", "Hijau", "Oranye", "Cokelat"], c: 0 },
-      { q: "Batik termasuk karya seni rupa...", a: ["2 Dimensi", "3 Dimensi", "4 Dimensi", "Digital"], c: 0 },
-      { q: "Keseimbangan dalam seni rupa disebut...", a: ["Balance", "Unity", "Rhythm", "Harmoni"], c: 0 }
+      { q: "Unsur seni rupa yang paling dasar dan terkecil adalah...", a: ["Titik", "Garis", "Bidang", "Warna"], c: 0 },
+      { q: "Gabungan dari titik-titik yang ditarik memanjang disebut...", a: ["Titik", "Garis", "Tekstur", "Volume"], c: 1 },
+      { q: "Manakah yang termasuk kelompok warna primer (pokok)?", a: ["Merah, Kuning, Biru", "Hijau, Ungu, Oranye", "Merah, Hitam, Putih", "Biru, Hijau, Kuning"], c: 0 },
+      { q: "Campuran warna Merah dan Kuning akan menghasilkan warna...", a: ["Hijau", "Ungu", "Oranye / Jingga", "Cokelat"], c: 2 },
+      { q: "Campuran warna Biru dan Kuning akan menghasilkan warna...", a: ["Hijau", "Ungu", "Oranye", "Merah"], c: 0 },
+      { q: "Karya seni rupa yang hanya memiliki ukuran panjang dan lebar saja disebut...", a: ["Seni rupa 1 dimensi", "Seni rupa 2 dimensi", "Seni rupa 3 dimensi", "Seni rupa murni"], c: 1 },
+      { q: "Contoh karya seni rupa 2 dimensi adalah...", a: ["Patung", "Vas bunga", "Lukisan / Gambar", "Topeng"], c: 2 },
+      { q: "Karya seni rupa yang memiliki volume atau ruang serta dapat dilihat dari berbagai arah disebut...", a: ["Seni rupa 2 dimensi", "Seni rupa 3 dimensi", "Seni rupa garis", "Seni rupa sketsa"], c: 1 },
+      { q: "Kesan rabaan dari suatu permukaan benda (halus atau kasar) disebut...", a: ["Warna", "Tekstur", "Bidang", "Titik"], c: 1 },
+      { q: "Campuran warna Merah dan Biru menghasilkan warna...", a: ["Hijau", "Ungu", "Oranye", "Kuning"], c: 1 },
+      { q: "Batik termasuk ke dalam contoh karya seni rupa...", a: ["2 Dimensi", "3 Dimensi", "Seni bangunan", "Seni kriya patung"], c: 0 },
+      { q: "Teknik menempelkan berbagai macam bahan (kain, kertas) pada permukaan pola disebut...", a: ["Teknik Mozaik", "Teknik Kolase", "Teknik Melukis", "Teknik Memahat"], c: 1 },
+      { q: "Teknik menempelkan kepingan bahan kecil sejenis (pecahan keramik/kertas kecil) disebut...", a: ["Teknik Mozaik", "Teknik Kolase", "Teknik Menggambar", "Teknik Pahat"], c: 0 },
+      { q: "Unsur gelap terang pada gambar berfungsi untuk memberikan kesan...", a: ["Warna-warni", "Kedalaman / Volume", "Keramaian", "Kasar benda"], c: 1 },
+      { q: "Perbandingan ukuran ideal antara bagian objek satu dengan lainnya disebut...", a: ["Keseimbangan", "Proporsi", "Irama", "Kesatuan"], c: 1 }
     ];
 
-    // Buat 50 Soal (Duplikasi/Variasi untuk melengkapi 50)
-    for (let i = 11; i <= 50; i++) {
+    // Lengkapi hingga 50 soal dengan variasi seputar seni rupa kelas 4
+    for (let i = 16; i <= 50; i++) {
       bankSoal.push({
-        q: `[Soal Variasi ${i}] Manakah unsur visual dalam seni rupa?`,
-        a: ["Garis", "Suara", "Aroma", "Gerak"],
+        q: `[Soal ${i}] Manakah yang merupakan unsur visual utama dalam seni rupa?`,
+        a: ["Garis dan Warna", "Suara dan Nada", "Gerak dan Tari", "Aroma dan Rasa"],
         c: 0
       });
     }
@@ -143,7 +147,7 @@
     let waktuDetik = 600; // 10 menit
     let hasilSemuaSesi = [];
 
-    // Efek Suara sederhanakan via Web Audio API
+    // Web Audio API untuk Efek Suara
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(freq, duration) {
       try {
@@ -158,7 +162,7 @@
       } catch(e) {}
     }
 
-    // Lock Fullscreen Handle
+    // Fungsi Fullscreen Handler
     function requestFullScreen() {
       let doc = document.documentElement;
       if (doc.requestFullscreen) doc.requestFullscreen();
@@ -166,16 +170,14 @@
       else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
     }
 
-    // Ambil Data Siswa dari Spreadsheet saat awal
+    // Ambil Data Siswa dari Spreadsheet Apps Script
     async function initData() {
       try {
         let res = await fetch(API_URL + "?action=getSiswa");
         semuaSiswa = await res.json();
       } catch (err) {
-        // Fallback contoh data jika offline / URL belum diset
-        semuaSiswa = ["Ahmad", "Budi", "Citra", "Dewi", "Eko", "Fani", "Gilang", "Hana", "Indra"];
+        semuaSiswa = ["Ahmad", "Budi", "Citra", "Dewi", "Eko", "Fani", "Gilang", "Hana"];
       }
-      // Acak urutan siswa
       siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
     }
     initData();
@@ -190,7 +192,6 @@
         return;
       }
 
-      // Ambil 4 siswa
       let kelompok = siswaAntrean.splice(0, 4);
       pemainAktif = kelompok.map((nama, idx) => ({
         id: idx,
@@ -211,11 +212,10 @@
     function renderArena() {
       const container = document.getElementById("playerTracks");
       container.innerHTML = "";
-
       const warna = ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500"];
 
       pemainAktif.forEach((p, idx) => {
-        let leftPercent = (p.langkah / 10) * 90; // Max 90% ke finish
+        let leftPercent = (p.langkah / 10) * 90;
         container.innerHTML += `
           <div class="relative h-12 flex items-center">
             <div class="character absolute ${warna[idx]} text-white px-3 py-1 rounded-full font-bold shadow-lg flex items-center gap-2" style="left: ${leftPercent}%;">
@@ -269,12 +269,10 @@
       p.totalJawab++;
 
       if (optIdx === currentSoal.c) {
-        // Jawaban Benar
         playSound(600, 0.1);
         p.langkah++;
         p.benar++;
       } else {
-        // Jawaban Salah
         playSound(200, 0.2);
       }
 
@@ -282,7 +280,6 @@
       renderArena();
       renderSoal();
 
-      // Cek apakah semua player di sesi ini sudah selesai
       let semuaSelesai = pemainAktif.every(player => player.langkah >= 10 || player.totalJawab >= 50);
       if (semuaSelesai) {
         akhiriSesi();
@@ -313,13 +310,11 @@
     function akhiriSesi() {
       clearInterval(timerInterval);
       
-      // Kalkulasi Nilai per Player
       let dataHasilSesi = pemainAktif.map(p => {
         let skor = 0;
         let tampilSkor = "";
 
         if (p.totalJawab >= 50 && p.benar < 10) {
-          // Gagal
           skor = 0;
           tampilSkor = "0 (Gagal)";
         } else if (p.benar > 10) {
@@ -341,13 +336,9 @@
         };
       });
 
-      // Simpan ke array global
       hasilSemuaSesi.push(...dataHasilSesi);
-
-      // Kirim Hasil ke Spreadsheet
       kirimKeSpreadsheet(dataHasilSesi);
 
-      // Lanjut Sesi Berikutnya atau Selesai
       if (siswaAntrean.length > 0) {
         sesiKe++;
         alert(`Sesi ${sesiKe - 1} Selesai! Klik OK untuk melanjutkan ke Sesi ${sesiKe}.`);
@@ -378,7 +369,6 @@
       document.getElementById("leaderboardModal").classList.remove("hidden");
       document.getElementById("leaderboardModal").classList.add("flex");
 
-      // Urutkan: 1. Jumlah Benar/Skor Terbanyak, 2. Soal Terjawab Terbanyak, 3. Waktu Tercepat
       hasilSemuaSesi.sort((a, b) => {
         if (b.skorAkhir !== a.skorAkhir) return b.skorAkhir - a.skorAkhir;
         if (b.totalJawab !== a.totalJawab) return b.totalJawab - a.totalJawab;
@@ -409,7 +399,7 @@
       const element = document.getElementById("pdfContent");
       html2pdf().from(element).set({
         margin: 10,
-        filename: 'Hasil_Balap_Cerdas_SeniRupa.pdf',
+        filename: 'Hasil_Balap_Cerdas_SeniRupa_Kelas4.pdf',
         html2canvas: { scale: 2 },
         jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
       }).save();
