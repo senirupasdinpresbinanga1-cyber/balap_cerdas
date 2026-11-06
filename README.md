@@ -1,1 +1,0 @@
-# balap_cerdas

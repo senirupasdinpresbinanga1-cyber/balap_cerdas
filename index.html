@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balap Cerdas - Seni Rupa</title>
+  <!-- Tailwind CSS & WebAudioFont Engine -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
+  <style>
+    .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
+    .character { transition: all 0.4s ease-in-out; }
+    .fullscreen-overlay { display: none; }
+    body:not(:fullscreen) .fullscreen-overlay { display: flex; }
+  </style>
+</head>
+<body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
+
+  <!-- OVERLAY JIKA KELUAR FULLSCREEN -->
+  <div id="fullscreenNotice" class="fullscreen-overlay fixed inset-0 bg-red-900/90 z-50 flex-col items-center justify-center text-center p-6 backdrop-blur-md">
+    <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
+    <p class="text-xl mb-6">Layar harus dalam mode Fullscreen untuk melanjutkan permainan!</p>
+    <button onclick="requestFullScreen()" class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-2xl px-8 py-4 rounded-xl shadow-lg transition">
+      Kembali ke Fullscreen 🖥️
+    </button>
+  </div>
+
+  <!-- MODAL CATATAN MATERI (TAHAP 1) -->
+  <div id="materiModal" class="fixed inset-0 bg-slate-900/95 z-40 flex flex-col p-8 overflow-y-auto">
+    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
+    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-lg leading-relaxed">
+      <p><b>1. Unsur Seni Rupa:</b> Titik, garis, bidang, bentuk, warna, tekstur, dan gelap terang.</p>
+      <p><b>2. Warna Primer:</b> Merah, Kuning, Biru.</p>
+      <p><b>3. Warna Sekunder:</b> Campuran 2 warna primer (misal: Merah + Kuning = Oranye, Biru + Kuning = Hijau).</p>
+      <p><b>4. Prinsip Seni Rupa:</b> Keseimbangan (Balance), Kesatuan (Unity), Irama (Rhythm), dan Proporsi.</p>
+      <p><b>5. Seni Rupa 2D vs 3D:</b> 2D memiliki panjang & lebar (lukisan), 3D memiliki panjang, lebar, & volume (patung).</p>
+      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat poin-poin penting di atas ke buku catatan Anda sebelum memulai permainan!</p>
+    </div>
+    <div class="text-center mt-6">
+      <button onclick="mulaiPermainanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-2xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
+        MULAI GAME BALAP 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTAINER UTAMA GAME -->
+  <div class="h-full flex flex-col justify-between p-4">
+    <!-- HEADER & TIMER -->
+    <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
+      <div>
+        <h2 class="text-xl font-bold text-yellow-400" id="infoSesi">Sesi 1</h2>
+      </div>
+      <div class="text-3xl font-black tracking-wider text-cyan-400" id="timer">10:00</div>
+      <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
+    </div>
+
+    <!-- AREA BALAPAN (ARENA 4 KARAKTER) -->
+    <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
+      <!-- Track Steps Background -->
+      <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="track-line h-full w-1/10"></div>
+        <div class="h-full border-r-4 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-sm">FINISH</span></div>
+      </div>
+
+      <!-- Player Lines (Max 4) -->
+      <div id="playerTracks" class="relative z-10 space-y-4"></div>
+    </div>
+
+    <!-- AREA SOAL 4 PLAYER -->
+    <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
+  </div>
+
+  <!-- MODAL BOARD JUARA / TOP SERVER -->
+  <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/98 z-50 hidden flex-col items-center justify-center p-8">
+    <h1 class="text-4xl font-black text-yellow-400 mb-2">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
+    <p class="text-slate-400 mb-6">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
+
+    <div id="pdfContent" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-3xl max-h-96 overflow-y-auto mb-6">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-600 text-yellow-400">
+            <th class="p-2">Pos</th>
+            <th class="p-2">Nama Siswa</th>
+            <th class="p-2">Soal Terjawab</th>
+            <th class="p-2">Nilai Akhir</th>
+            <th class="p-2">Waktu</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+
+    <div class="flex gap-4">
+      <button onclick="cetakPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow">
+        📄 Cetak PDF
+      </button>
+      <button onclick="location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow">
+        🔄 Reset Game
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // URL Web App Google Apps Script Anda
+    const API_URL = "https://script.google.com/macros/s/AKfycbzIa56uxdydc8_w6iSWPX09bG6xtRP8D9p6cwuCorb5yo-I0gnThusAE20cGl71QIQe/exec";
+
+    // Data 50 Soal Seni Rupa
+    const bankSoal = [
+      { q: "Warna campuran Merah + Kuning?", a: ["Oranye", "Hijau", "Ungu", "Cokelat"], c: 0 },
+      { q: "Unsur seni rupa paling dasar?", a: ["Garis", "Titik", "Bidang", "Bentuk"], c: 1 },
+      { q: "Karya seni rupa 2 dimensi memiliki?", a: ["Panjang & Lebar", "Panjang & Volume", "Volume saja", "Ruang"], c: 0 },
+      { q: "Warna campuran Biru + Kuning?", a: ["Hijau", "Ungu", "Oranye", "Merah"], c: 0 },
+      { q: "Contoh karya seni rupa 3 dimensi?", a: ["Lukisan", "Patung", "Batik", "Poster"], c: 1 },
+      { q: "Warna primer adalah...", a: ["Merah, Kuning, Biru", "Hijau, Ungu, Oranye", "Hitam & Putih", "Cokelat & Merah"], c: 0 },
+      { q: "Kesan permukaan suatu benda disebut?", a: ["Tekstur", "Gelap Terang", "Warna", "Bentuk"], c: 0 },
+      { q: "Warna hasil campuran Merah + Biru?", a: ["Ungu", "Hijau", "Oranye", "Cokelat"], c: 0 },
+      { q: "Batik termasuk karya seni rupa...", a: ["2 Dimensi", "3 Dimensi", "4 Dimensi", "Digital"], c: 0 },
+      { q: "Keseimbangan dalam seni rupa disebut...", a: ["Balance", "Unity", "Rhythm", "Harmoni"], c: 0 }
+    ];
+
+    // Buat 50 Soal (Duplikasi/Variasi untuk melengkapi 50)
+    for (let i = 11; i <= 50; i++) {
+      bankSoal.push({
+        q: `[Soal Variasi ${i}] Manakah unsur visual dalam seni rupa?`,
+        a: ["Garis", "Suara", "Aroma", "Gerak"],
+        c: 0
+      });
+    }
+
+    let semuaSiswa = [];
+    let siswaAntrean = [];
+    let pemainAktif = [];
+    let sesiKe = 1;
+    let timerInterval = null;
+    let waktuDetik = 600; // 10 menit
+    let hasilSemuaSesi = [];
+
+    // Efek Suara sederhanakan via Web Audio API
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(freq, duration) {
+      try {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    // Lock Fullscreen Handle
+    function requestFullScreen() {
+      let doc = document.documentElement;
+      if (doc.requestFullscreen) doc.requestFullscreen();
+      else if (doc.mozRequestFullScreen) doc.mozRequestFullScreen();
+      else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+    }
+
+    // Ambil Data Siswa dari Spreadsheet saat awal
+    async function initData() {
+      try {
+        let res = await fetch(API_URL + "?action=getSiswa");
+        semuaSiswa = await res.json();
+      } catch (err) {
+        // Fallback contoh data jika offline / URL belum diset
+        semuaSiswa = ["Ahmad", "Budi", "Citra", "Dewi", "Eko", "Fani", "Gilang", "Hana", "Indra"];
+      }
+      // Acak urutan siswa
+      siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
+    }
+    initData();
+
+    function mulaiPermainanSesi() {
+      requestFullScreen();
+      document.getElementById("materiModal").classList.add("hidden");
+
+      if (siswaAntrean.length === 0) {
+        alert("Semua siswa sudah memiliki nilai / antrean habis!");
+        tampilkanLeaderboard();
+        return;
+      }
+
+      // Ambil 4 siswa
+      let kelompok = siswaAntrean.splice(0, 4);
+      pemainAktif = kelompok.map((nama, idx) => ({
+        id: idx,
+        nama: nama,
+        langkah: 0,
+        benar: 0,
+        totalJawab: 0,
+        soalDipakai: [...bankSoal].sort(() => Math.random() - 0.5),
+        soalIndex: 0
+      }));
+
+      document.getElementById("infoSesi").innerText = `Sesi ${sesiKe} (Jumlah Siswa: ${pemainAktif.length})`;
+      renderArena();
+      renderSoal();
+      startTimer();
+    }
+
+    function renderArena() {
+      const container = document.getElementById("playerTracks");
+      container.innerHTML = "";
+
+      const warna = ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500"];
+
+      pemainAktif.forEach((p, idx) => {
+        let leftPercent = (p.langkah / 10) * 90; // Max 90% ke finish
+        container.innerHTML += `
+          <div class="relative h-12 flex items-center">
+            <div class="character absolute ${warna[idx]} text-white px-3 py-1 rounded-full font-bold shadow-lg flex items-center gap-2" style="left: ${leftPercent}%;">
+              🤖 <span>${p.nama}</span> (${p.langkah}/10)
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderSoal() {
+      const grid = document.getElementById("questionGrid");
+      grid.innerHTML = "";
+
+      pemainAktif.forEach((p, idx) => {
+        let currentSoal = p.soalDipakai[p.soalIndex];
+        if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 50) {
+          grid.innerHTML += `
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center">
+              <h3 class="font-bold text-yellow-400 mb-2">${p.nama}</h3>
+              <p class="text-green-400 font-bold">SELESAI / FINISH!</p>
+            </div>
+          `;
+          return;
+        }
+
+        let opsiHtml = currentSoal.a.map((opt, oIdx) => `
+          <button onclick="jawabSoal(${idx}, ${oIdx})" class="bg-slate-700 hover:bg-slate-600 text-sm py-2 px-3 rounded text-left w-full transition">
+            ${String.fromCharCode(65 + oIdx)}. ${opt}
+          </button>
+        `).join("");
+
+        grid.innerHTML += `
+          <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between">
+            <div>
+              <div class="text-xs font-bold text-cyan-400 mb-1">${p.nama} (Soal ${p.totalJawab + 1}/50)</div>
+              <p class="text-xs font-semibold mb-2">${currentSoal.q}</p>
+            </div>
+            <div class="space-y-1">
+              ${opsiHtml}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function jawabSoal(playerIdx, optIdx) {
+      let p = pemainAktif[playerIdx];
+      let currentSoal = p.soalDipakai[p.soalIndex];
+
+      p.totalJawab++;
+
+      if (optIdx === currentSoal.c) {
+        // Jawaban Benar
+        playSound(600, 0.1);
+        p.langkah++;
+        p.benar++;
+      } else {
+        // Jawaban Salah
+        playSound(200, 0.2);
+      }
+
+      p.soalIndex = (p.soalIndex + 1) % p.soalDipakai.length;
+      renderArena();
+      renderSoal();
+
+      // Cek apakah semua player di sesi ini sudah selesai
+      let semuaSelesai = pemainAktif.every(player => player.langkah >= 10 || player.totalJawab >= 50);
+      if (semuaSelesai) {
+        akhiriSesi();
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      waktuDetik = 600;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        waktuDetik--;
+        updateTimerDisplay();
+        if (waktuDetik <= 0) {
+          clearInterval(timerInterval);
+          akhiriSesi();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      let m = Math.floor(waktuDetik / 60);
+      let s = waktuDetik % 60;
+      document.getElementById("timer").innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function akhiriSesi() {
+      clearInterval(timerInterval);
+      
+      // Kalkulasi Nilai per Player
+      let dataHasilSesi = pemainAktif.map(p => {
+        let skor = 0;
+        let tampilSkor = "";
+
+        if (p.totalJawab >= 50 && p.benar < 10) {
+          // Gagal
+          skor = 0;
+          tampilSkor = "0 (Gagal)";
+        } else if (p.benar > 10) {
+          let bonus = p.benar - 10;
+          skor = p.benar;
+          tampilSkor = `10 + <span class="text-green-400 font-bold">${bonus}</span>`;
+        } else {
+          skor = p.benar;
+          tampilSkor = `${p.benar}`;
+        }
+
+        return {
+          nama: p.nama,
+          skorAkhir: skor,
+          tampilSkor: tampilSkor,
+          soalTerjawabFormat: `${p.benar}/${p.totalJawab}`,
+          waktuDetik: 600 - waktuDetik,
+          totalJawab: p.totalJawab
+        };
+      });
+
+      // Simpan ke array global
+      hasilSemuaSesi.push(...dataHasilSesi);
+
+      // Kirim Hasil ke Spreadsheet
+      kirimKeSpreadsheet(dataHasilSesi);
+
+      // Lanjut Sesi Berikutnya atau Selesai
+      if (siswaAntrean.length > 0) {
+        sesiKe++;
+        alert(`Sesi ${sesiKe - 1} Selesai! Klik OK untuk melanjutkan ke Sesi ${sesiKe}.`);
+        mulaiPermainanSesi();
+      } else {
+        selesaikanSemuaSesi();
+      }
+    }
+
+    async function kirimKeSpreadsheet(results) {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "saveResults", results: results })
+        });
+      } catch(e) {
+        console.log("Gagal sync data:", e);
+      }
+    }
+
+    function selesaikanSemuaSesi() {
+      clearInterval(timerInterval);
+      tampilkanLeaderboard();
+    }
+
+    function tampilkanLeaderboard() {
+      document.getElementById("leaderboardModal").classList.remove("hidden");
+      document.getElementById("leaderboardModal").classList.add("flex");
+
+      // Urutkan: 1. Jumlah Benar/Skor Terbanyak, 2. Soal Terjawab Terbanyak, 3. Waktu Tercepat
+      hasilSemuaSesi.sort((a, b) => {
+        if (b.skorAkhir !== a.skorAkhir) return b.skorAkhir - a.skorAkhir;
+        if (b.totalJawab !== a.totalJawab) return b.totalJawab - a.totalJawab;
+        return a.waktuDetik - b.waktuDetik;
+      });
+
+      const tbody = document.getElementById("leaderboardBody");
+      tbody.innerHTML = "";
+
+      hasilSemuaSesi.forEach((r, idx) => {
+        let menit = Math.floor(r.waktuDetik / 60);
+        let detik = r.waktuDetik % 60;
+        let waktuStr = `${menit}m ${detik}s`;
+
+        tbody.innerHTML += `
+          <tr class="border-b border-slate-700">
+            <td class="p-2 font-bold">${idx + 1}</td>
+            <td class="p-2 font-semibold text-cyan-300">${r.nama}</td>
+            <td class="p-2">${r.soalTerjawabFormat}</td>
+            <td class="p-2">${r.tampilSkor}</td>
+            <td class="p-2 text-slate-400">${waktuStr}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function cetakPDF() {
+      const element = document.getElementById("pdfContent");
+      html2pdf().from(element).set({
+        margin: 10,
+        filename: 'Hasil_Balap_Cerdas_SeniRupa.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+      }).save();
+    }
+  </script>
+</body>
+</html>
