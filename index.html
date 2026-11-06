@@ -9,10 +9,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
-    .character { transition: all 0.4s ease-in-out; }
+    .character { transition: all 0.3s ease-in-out; }
     .fullscreen-overlay { display: none; }
-    /* Fullscreen overlay hanya aktif jika permainan sudah dimulai */
     body.game-started:not(:fullscreen) .fullscreen-overlay { display: flex; }
+    /* Mencegah seleksi teks dan memastikan touch responsif untuk banyak jari */
+    button { touch-action: manipulation; }
   </style>
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
@@ -30,7 +31,7 @@
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
     
-    <!-- TEMPAT PASTE CATATAN SENDIRI DI SINI -->
+    <!-- TEMPAT PASTE CATATAN ANDA DI SINI -->
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
       <p><b>1. Imajinasi & Kemampuan Berpikir Kreatif:</b> Imajinasi adalah kemampuan membayangkan atau menciptakan gambaran dalam pikiran untuk menghasilkan ide baru dalam berkarya.</p>
       <p><b>2. Karya Maket:</b> Maket adalah miniatur atau tiruan suatu bangunan atau objek yang dibuat dengan ukuran lebih kecil dari ukuran sebenarnya. Bahan pembuatannya dapat berupa kardus, karton, dan lem.</p>
@@ -38,20 +39,23 @@
       <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat poin-poin materi di atas ke buku catatan Anda sebelum permainan dimulai!</p>
     </div>
 
-    <div class="text-center mt-6">
-      <button onclick="bukaPersiapanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-2xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
+    <div class="flex justify-center gap-4 mt-6">
+      <button onclick="bukaPersiapanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-xl px-8 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
         LANJUT KE PERSIAPAN SESI 🚀
+      </button>
+      <button onclick="resetAntreanLokal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-xl">
+        🔄 Muat Ulang Data Siswa
       </button>
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI (MUNCUL 4 NAMA SISWA SEBELUM MULAI) -->
+  <!-- MODAL PERSIAPAN SESI (MUNCUL 4 NAMA SISWA & TOMBOL MULAI) -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
-    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6">
+    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
       <p class="text-slate-300">Berikut adalah 4 siswa yang terpilih untuk bertanding pada sesi ini:</p>
       <div id="listSiswaPersiapan" class="grid grid-cols-2 gap-3 text-lg font-bold"></div>
-      <button onclick="mulaiGameSesiIni()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-black text-xl py-4 rounded-xl shadow-lg transition">
+      <button onclick="mulaiGameSesiIni()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-black text-2xl py-4 rounded-xl shadow-lg transition transform hover:scale-105">
         MULAI GAME SEKARANG 🏁
       </button>
     </div>
@@ -85,7 +89,7 @@
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
-    <!-- AREA SOAL 4 PLAYER -->
+    <!-- AREA SOAL 4 PLAYER (MULTI-TOUCH SUPPORT) -->
     <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
   </div>
 
@@ -155,33 +159,45 @@
 
     async function initData() {
       try {
-        // Ambil Data Siswa yang belum ada nilainya
         let resSiswa = await fetch(API_URL + "?action=getSiswa");
         semuaSiswa = await resSiswa.json();
 
-        // Ambil Data Soal dari Sheet "Soal"
         let resSoal = await fetch(API_URL + "?action=getSoal");
         bankSoal = await resSoal.json();
       } catch (err) {
         console.log("Gagal memuat data dari Spreadsheet, menggunakan fallback.", err);
+        semuaSiswa = ["Ahmad", "Budi", "Citra", "Dewi", "Eko", "Fani", "Gilang", "Hana"];
+        bankSoal = [
+          { q: "Apa yang dimaksud dengan imajinasi?", a: ["Kemampuan membayangkan", "Menghitung angka", "Membaca cepat"], c: 0 }
+        ];
       }
 
-      // Acak urutan siswa yang siap bertanding
+      if (!semuaSiswa || semuaSiswa.length === 0) {
+        semuaSiswa = ["Siswa 1", "Siswa 2", "Siswa 3", "Siswa 4", "Siswa 5", "Siswa 6", "Siswa 7", "Siswa 8"];
+      }
+
       siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
     }
     initData();
 
+    function resetAntreanLokal() {
+      siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
+      sesiKe = 1;
+      alert("Data antrean berhasil dimuat ulang! Silakan lanjut ke persiapan sesi.");
+    }
+
     function bukaPersiapanSesi() {
       if (siswaAntrean.length === 0) {
-        alert("Semua siswa sudah memiliki nilai / antrean habis!");
+        alert("Semua antrean siswa habis! Menampilkan papan peringkat.");
         tampilkanLeaderboard();
         return;
       }
 
       if (bankSoal.length === 0) {
-        alert("Soal dari Sheet 'Soal' belum berhasil dimuat. Pastikan Sheet 'Soal' sudah terisi!");
+        alert("Peringatan: Bank soal kosong. Pastikan Sheet 'Soal' sudah terisi di Google Sheets.");
       }
 
+      // Ambil 4 siswa (atau sisa jika kurang dari 4) untuk sesi ini
       kelompokSementara = siswaAntrean.splice(0, 4);
 
       document.getElementById("materiModal").classList.add("hidden");
@@ -254,7 +270,7 @@
         }
 
         let opsiHtml = currentSoal.a.map((opt, oIdx) => `
-          <button onclick="jawabSoal(${idx}, ${oIdx})" class="bg-slate-700 hover:bg-slate-600 text-sm py-2 px-3 rounded text-left w-full transition">
+          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-sm py-2 px-3 rounded text-left w-full transition active:bg-cyan-600">
             ${String.fromCharCode(65 + oIdx)}. ${opt}
           </button>
         `).join("");
@@ -270,6 +286,16 @@
             </div>
           </div>
         `;
+      });
+
+      // Event listener menggunakan pointerdown agar mendukung multi-touch secara serentak (4 orang sekaligus)
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          let pIdx = parseInt(btn.getAttribute('data-player'));
+          let oIdx = parseInt(btn.getAttribute('data-opt'));
+          jawabSoal(pIdx, oIdx);
+        }, { passive: false });
       });
     }
 
