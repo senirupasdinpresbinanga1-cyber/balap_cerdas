@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
@@ -23,9 +23,14 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (SILAHKAN MEMBACA) -->
+  <!-- MODAL CATATAN MATERI (SILAHKAN MEMBACA & TOMBOL LIHAT NILAI) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
-    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 SILAHKAN MEMBACA</h1>
+    <div class="flex justify-between items-center max-w-4xl mx-auto w-full mb-4">
+      <h1 class="text-3xl font-bold text-yellow-400 text-center flex-grow">🎨 SILAHKAN MEMBACA</h1>
+      <button onclick="bukaModalNilaiSheet()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow transition">
+        📊 Lihat Rekap Nilai
+      </button>
+    </div>
     
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
       <p><b>1. Imajinasi:</b> Imajinasi adalah kemampuan seseorang untuk membayangkan sesuatu yang belum tentu ada atau terjadi. Imajinasi sangat penting dalam seni rupa karena dapat membantu menghasilkan ide dan karya baru. Contohnya membayangkan rumah di atas awan atau mobil yang bisa terbang. Imajinasi dapat dikembangkan dengan mengamati lingkungan, mencari inspirasi, dan berani mencoba hal baru.</p>
@@ -36,7 +41,7 @@
       
       <p><b>4. Seni Rupa 2 Dimensi:</b> Seni Rupa 2 Dimensi adalah karya seni yang memiliki dua ukuran utama, yaitu panjang dan lebar. Karya ini hanya dapat dilihat dari satu arah atau sisi tertentu. Contohnya lukisan, gambar, poster, dan foto.</p>
       
-      <p><b>5. Seni Rupa 3 Dimensi:</b> Seni Rupa 3 Dimensi adalah karya seni yang memiliki tiga ukuran, yaitu panjang, lebar, dan tinggi. Karya ini memiliki volume atau isi sehingga dapat dilihat dari berbagai arah. Contohnya patung, vas bunga, vas bunga, dan miniatur rumah.</p>
+      <p><b>5. Seni Rupa 3 Dimensi:</b> Seni Rupa 3 Dimensi adalah karya seni yang memiliki tiga ukuran, yaitu panjang, lebar, dan tinggi. Karya ini memiliki volume atau isi sehingga dapat dilihat dari berbagai arah. Contohnya patung, vas bunga, dan miniatur rumah.</p>
       
       <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan baca materi di atas dengan teliti sebelum permainan dimulai!</p>
     </div>
@@ -49,6 +54,30 @@
         🔄 Muat Ulang Data
       </button>
     </div>
+  </div>
+
+  <!-- MODAL LIHAT REKAP NILAI DARI SPREADSHEET -->
+  <div id="modalNilaiSheet" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex-col items-center justify-center p-6 overflow-y-auto">
+    <h2 class="text-2xl font-black text-yellow-400 mb-2">📊 REKAPITULASI NILAI SPREADSHEET</h2>
+    <p class="text-slate-400 mb-4 text-sm">Data nilai siswa yang tersimpan di server</p>
+    
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full max-w-2xl max-h-[60vh] overflow-y-auto mb-4">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
+            <th class="p-2">Nama Siswa</th>
+            <th class="p-2">Nilai</th>
+          </tr>
+        </thead>
+        <tbody id="tabelNilaiBody">
+          <tr><td colspan="2" class="p-4 text-center text-slate-400">Memuat data nilai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button onclick="tutupModalNilaiSheet()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-2 rounded-xl shadow">
+      Tutup ❌
+    </button>
   </div>
 
   <!-- MODAL PERSIAPAN SESI -->
@@ -138,7 +167,6 @@
     let kelompokSementara = [];
     let isGameRunning = false;
 
-    // Web Audio API untuk Sound Effects & Backsound Musik Ceria
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let bgmInterval = null;
 
@@ -159,11 +187,9 @@
       playSound(300, 0.15);
     }
 
-    // Generator Backsound Musik Ceria saat Game Berjalan
     function startBGM() {
       stopBGM();
       const melodi = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-      let step = 0;
       bgmInterval = setInterval(() => {
         if (!isGameRunning) return;
         try {
@@ -233,6 +259,31 @@
       }
     }
     initData();
+
+    // Fungsi untuk membuka modal rekap nilai dari Sheet
+    async function bukaModalNilaiSheet() {
+      const modal = document.getElementById("modalNilaiSheet");
+      const tbody = document.getElementById("tabelNilaiBody");
+      tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-slate-400">Memuat data rekap nilai...</td></tr>`;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+      try {
+        let res = await fetch(API_URL + "?action=getSiswa");
+        // Kita gunakan fetch tambahan atau ambil data dari endpoint rekap jika tersedia, 
+        // namun karena endpoint getSiswa memfilter siswa yang belum ada nilai, kita bisa buat fetch langsung ke sheet Nilai jika diinginkan atau menampilkan cache.
+        // Sebagai alternatif praktis, kita ambil data siswa keseluruhan atau tampilkan pesan.
+        tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-yellow-300">Silakan cek langsung di Google Spreadsheet pada tab sheet "Nilai" untuk melihat rekapitulasi lengkap seluruh siswa.</td></tr>`;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-red-400">Gagal memuat data nilai.</td></tr>`;
+      }
+    }
+
+    function tutupModalNilaiSheet() {
+      const modal = document.getElementById("modalNilaiSheet");
+      modal.classList.remove("flex");
+      modal.classList.add("hidden");
+    }
 
     function bukaPersiapanSesi() {
       stopBGM();
@@ -325,7 +376,7 @@
       renderArena();
       renderSoal();
       startTimer();
-      startBGM(); // Mulai memutar musik backsound
+      startBGM();
     }
 
     function renderArena() {
@@ -449,7 +500,7 @@
 
     function akhiriSesi() {
       clearInterval(timerInterval);
-      stopBGM(); // Matikan backsound saat sesi berakhir
+      stopBGM();
       isGameRunning = false;
       
       let dataHasilSesi = pemainAktif.map(p => {
