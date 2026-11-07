@@ -4,20 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
-    .fullscreen-overlay { display: none; }
-    body.game-started:not(:fullscreen) .fullscreen-overlay { display: flex; }
     button { touch-action: manipulation; }
   </style>
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
 
-  <!-- OVERLAY FULLSCREEN GUARD -->
-  <div id="fullscreenNotice" class="fullscreen-overlay fixed inset-0 bg-red-900/90 z-50 flex-col items-center justify-center text-center p-6 backdrop-blur-md">
+  <!-- OVERLAY JIKA KELUAR FULLSCREEN SAAT GAME BERJALAN -->
+  <div id="fullscreenNotice" class="fixed inset-0 bg-red-900/90 z-50 hidden flex-col items-center justify-center text-center p-6 backdrop-blur-md">
     <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
     <p class="text-xl mb-6">Layar harus dalam mode Fullscreen untuk melanjutkan permainan!</p>
     <button onclick="requestFullScreen()" class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-2xl px-8 py-4 rounded-xl shadow-lg transition">
@@ -25,10 +24,11 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI -->
+  <!-- MODAL CATATAN MATERI (HALAMAN AWAL) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
     
+    <!-- CATATAN MATERI SENI RUPA -->
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
       <p><b>1. Imajinasi:</b> Imajinasi adalah kemampuan seseorang untuk membayangkan sesuatu yang belum tentu ada atau pernah dilihat. Imajinasi membantu kita menemukan ide dan menghasilkan karya seni yang unik. Contohnya membayangkan rumah di atas awan, hewan khayalan, atau kendaraan terbang.</p>
       
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI -->
+  <!-- MODAL PERSIAPAN SESI (MUNCUL 4 SISWA & TOMBOL MULAI) -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
     <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
@@ -65,8 +65,9 @@
     </div>
   </div>
 
-  <!-- CONTAINER UTAMA GAME -->
+  <!-- CONTAINER UTAMA GAME BALAP CERDAS -->
   <div class="h-full flex flex-col justify-between p-4">
+    <!-- HEADER & TIMER -->
     <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
       <div>
         <h2 class="text-xl font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
@@ -75,6 +76,7 @@
       <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
     </div>
 
+    <!-- AREA BALAPAN (4 JALUR KARAKTER) -->
     <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
       <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
         <div class="track-line h-full w-1/10"></div>
@@ -91,10 +93,11 @@
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
+    <!-- AREA SOAL (4 KOLOM MULTI-TOUCH UNTUK SMART BOARD) -->
     <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
   </div>
 
-  <!-- MODAL LEADERBOARD / JUARA -->
+  <!-- MODAL LEADERBOARD / JUARA TOP SERVER -->
   <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/98 z-50 hidden flex-col items-center justify-center p-8">
     <h1 class="text-4xl font-black text-yellow-400 mb-2">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
     <p class="text-slate-400 mb-6">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
@@ -136,7 +139,9 @@
     let waktuDetik = 600;
     let hasilSemuaSesi = [];
     let kelompokSementara = [];
+    let isGameRunning = false;
 
+    // Web Audio API untuk Sound Effects
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(freq, duration) {
       try {
@@ -151,6 +156,7 @@
       } catch(e) {}
     }
 
+    // Perbaikan Logika Fullscreen dan Pengamannya
     function requestFullScreen() {
       let doc = document.documentElement;
       if (doc.requestFullscreen) doc.requestFullscreen();
@@ -158,6 +164,25 @@
       else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
     }
 
+    // Deteksi peristiwa perubahan status Fullscreen secara tepat
+    document.addEventListener("fullscreenchange", checkFullscreenState);
+    document.addEventListener("webkitfullscreenchange", checkFullscreenState);
+    document.addEventListener("mozfullscreenchange", checkFullscreenState);
+
+    function checkFullscreenState() {
+      if (!isGameRunning) return;
+      const isFull = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+      const notice = document.getElementById("fullscreenNotice");
+      if (!isFull) {
+        notice.classList.remove("hidden");
+        notice.classList.add("flex");
+      } else {
+        notice.classList.remove("flex");
+        notice.classList.add("hidden");
+      }
+    }
+
+    // Mengambil data siswa dan soal dari Spreadsheet
     async function initData() {
       try {
         let resSiswa = await fetch(API_URL + "?action=getSiswa");
@@ -204,8 +229,8 @@
     }
 
     function mulaiGameSesiIni() {
+      isGameRunning = true;
       requestFullScreen();
-      document.body.classList.add("game-started");
 
       document.getElementById("persiapanModal").classList.remove("flex");
       document.getElementById("persiapanModal").classList.add("hidden");
@@ -278,7 +303,7 @@
         `;
       });
 
-      // Event listener dengan multi-touch untuk 4 area layar sentuh secara simultan
+      // Pointer Event Listener independen untuk multi-touch 4 pemain serentak di Smart Board
       document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
@@ -388,6 +413,7 @@
     }
 
     function selesaikanSemuaSesi() {
+      isGameRunning = false;
       clearInterval(timerInterval);
       tampilkanLeaderboard();
     }
