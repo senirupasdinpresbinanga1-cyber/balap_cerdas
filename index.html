@@ -23,7 +23,7 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (DIUBAH MENJADI SILAHKAN MEMBACA) -->
+  <!-- MODAL CATATAN MATERI (SILAHKAN MEMBACA) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 SILAHKAN MEMBACA</h1>
     
@@ -51,12 +51,14 @@
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI -->
+  <!-- MODAL PERSIAPAN SESI (FORMAT ANGKA 1-4 & TOMBOL SKIP SEBELAH KIRI) -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
-    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6 shadow-2xl">
+    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-2xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
       <p class="text-slate-300">Berikut adalah siswa yang terpilih untuk bertanding pada sesi ini:</p>
+      
       <div id="listSiswaPersiapan" class="grid grid-cols-2 gap-3 text-lg font-bold"></div>
+      
       <button onclick="mulaiGameSesiIni()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-black text-2xl py-4 rounded-xl shadow-lg transition transform hover:scale-105">
         MULAI GAME SEKARANG 🏁
       </button>
@@ -186,7 +188,6 @@
         let resSoal = await fetch(API_URL + "?action=getSoal");
         let rawSoal = await resSoal.json();
         
-        // Membatasi maksimal 25 soal saja dari database spreadsheet
         bankSoal = rawSoal.slice(0, 25);
       } catch (err) {
         console.log("Gagal memuat data dari Spreadsheet.", err);
@@ -201,32 +202,77 @@
     initData();
 
     function bukaPersiapanSesi() {
-      if (siswaAntrean.length === 0) {
-        alert("Semua antrean siswa habis! Menampilkan papan peringkat server.");
-        tampilkanLeaderboard();
-        return;
+      if (kelompokSementara.length === 0) {
+        if (siswaAntrean.length === 0) {
+          alert("Semua antrean siswa habis! Menampilkan papan peringkat server.");
+          tampilkanLeaderboard();
+          return;
+        }
+        kelompokSementara = siswaAntrean.splice(0, 4);
       }
 
       if (bankSoal.length === 0) {
         alert("Peringatan: Bank soal dari Sheet 'Soal' belum termuat.");
       }
 
-      kelompokSementara = siswaAntrean.splice(0, 4);
-
       document.getElementById("materiModal").classList.add("hidden");
       document.getElementById("infoSesiTitle").innerText = `SESI ${sesiKe} - BERSIAP`;
       
-      const listContainer = document.getElementById("listSiswaPersiapan");
-      listContainer.innerHTML = "";
-      kelompokSementara.forEach((nama, idx) => {
-        listContainer.innerHTML += `<div class="bg-slate-700 p-3 rounded-lg text-cyan-300">Player ${idx + 1}: ${nama}</div>`;
-      });
+      renderListPersiapan();
 
       document.getElementById("persiapanModal").classList.remove("hidden");
       document.getElementById("persiapanModal").classList.add("flex");
     }
 
+    function renderListPersiapan() {
+      const listContainer = document.getElementById("listSiswaPersiapan");
+      listContainer.innerHTML = "";
+      
+      kelompokSementara.forEach((nama, idx) => {
+        listContainer.innerHTML += `
+          <div class="bg-slate-700 p-2 rounded-lg flex items-center gap-2">
+            <button onclick="skipSiswa(${idx})" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-2 rounded transition shadow">
+              Skip
+            </button>
+            <span class="text-cyan-300 font-bold truncate text-sm flex-grow text-left">
+              ${idx + 1}. ${nama}
+            </span>
+          </div>
+        `;
+      });
+    }
+
+    function skipSiswa(index) {
+      let siswaDiSkip = kelompokSementara[index];
+      
+      // Simpan data Absen ke spreadsheet
+      let dataAbsen = [{
+        nama: siswaDiSkip,
+        skorAkhir: "Absen",
+        tampilSkor: "Absen",
+        soalTerjawabFormat: "0/0",
+        waktuDetik: 0,
+        totalJawab: 0
+      }];
+      
+      kirimKeSpreadsheet(dataAbsen);
+
+      // Gantikan posisi siswa yang di-skip dengan siswa antrean berikutnya
+      if (siswaAntrean.length > 0) {
+        kelompokSementara[index] = siswaAntrean.shift();
+      } else {
+        kelompokSementara.splice(index, 1);
+      }
+
+      renderListPersiapan();
+    }
+
     function mulaiGameSesiIni() {
+      if (kelompokSementara.length === 0) {
+        alert("Tidak ada siswa aktif untuk sesi ini!");
+        return;
+      }
+
       isGameRunning = true;
       requestFullScreen();
 
@@ -401,6 +447,8 @@
       hasilSemuaSesi.push(...dataHasilSesi);
       kirimKeSpreadsheet(dataHasilSesi);
 
+      kelompokSementara = []; // Kosongkan kelompok setelah selesai sesi
+
       if (siswaAntrean.length > 0) {
         sesiKe++;
         bukaPersiapanSesi();
@@ -435,6 +483,8 @@
       document.getElementById("leaderboardModal").classList.add("flex");
 
       hasilSemuaSesi.sort((a, b) => {
+        if (b.skorAkhir === "Absen") return -1;
+        if (a.skorAkhir === "Absen") return 1;
         if (b.skorAkhir !== a.skorAkhir) return b.skorAkhir - a.skorAkhir;
         if (b.totalJawab !== a.totalJawab) return b.totalJawab - a.totalJawab;
         return a.waktuDetik - b.waktuDetik;
@@ -446,7 +496,7 @@
       hasilSemuaSesi.forEach((r, idx) => {
         let menit = Math.floor(r.waktuDetik / 60);
         let detik = r.waktuDetik % 60;
-        let waktuStr = `${menit}m ${detik}s`;
+        let waktuStr = r.skorAkhir === "Absen" ? "-" : `${menit}m ${detik}s`;
 
         tbody.innerHTML += `
           <tr class="border-b border-slate-700">
