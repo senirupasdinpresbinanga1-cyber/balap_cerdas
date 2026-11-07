@@ -184,7 +184,10 @@
         semuaSiswa = await resSiswa.json();
 
         let resSoal = await fetch(API_URL + "?action=getSoal");
-        bankSoal = await resSoal.json();
+        let rawSoal = await resSoal.json();
+        
+        // Membatasi maksimal 25 soal saja dari database spreadsheet
+        bankSoal = rawSoal.slice(0, 25);
       } catch (err) {
         console.log("Gagal memuat data dari Spreadsheet.", err);
       }
@@ -269,7 +272,8 @@
 
       pemainAktif.forEach((p, idx) => {
         let currentSoal = p.soalDipakai[p.soalIndex];
-        if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 50) {
+        // Batas maksimal soal disesuaikan menjadi 25 soal
+        if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 25) {
           grid.innerHTML += `
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center">
               <h3 class="font-bold text-yellow-400 mb-2">${p.nama}</h3>
@@ -288,7 +292,7 @@
         grid.innerHTML += `
           <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between">
             <div>
-              <div class="text-xs font-bold text-cyan-400 mb-1">${p.nama} (Soal ${p.totalJawab + 1}/50)</div>
+              <div class="text-xs font-bold text-cyan-400 mb-1">${p.nama} (Soal ${p.totalJawab + 1}/25)</div>
               <p class="text-xs font-semibold mb-2">${currentSoal.q}</p>
             </div>
             <div class="space-y-1">
@@ -326,7 +330,7 @@
       renderArena();
       renderSoal();
 
-      let semuaSelesai = pemainAktif.every(player => player.langkah >= 10 || player.totalJawab >= 50);
+      let semuaSelesai = pemainAktif.every(player => player.langkah >= 10 || player.totalJawab >= 25);
       if (semuaSelesai) {
         akhiriSesi();
       }
@@ -373,7 +377,7 @@
         let skor = 0;
         let tampilSkor = "";
 
-        if (p.totalJawab >= 50 && p.benar < 10) {
+        if (p.totalJawab >= 25 && p.benar < 10) {
           skor = 0;
           tampilSkor = "0 (Gagal)";
         } else if (p.benar > 10) {
@@ -406,7 +410,6 @@
       }
     }
 
-    // Menggunakan mode no-cors agar POST request berhasil terkirim ke Google Apps Script tanpa terhalang browser
     async function kirimKeSpreadsheet(results) {
       try {
         await fetch(API_URL, {
