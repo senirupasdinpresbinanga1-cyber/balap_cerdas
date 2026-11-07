@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
@@ -56,26 +56,28 @@
     </div>
   </div>
 
-  <!-- MODAL LIHAT REKAP NILAI DARI SPREADSHEET -->
+  <!-- MODAL LIHAT REKAP NILAI (MENAMPILKAN NAMA, NILAI, SOAL TERJAWAB, & TIMER) -->
   <div id="modalNilaiSheet" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex-col items-center justify-center p-6 overflow-y-auto">
-    <h2 class="text-2xl font-black text-yellow-400 mb-2">📊 REKAPITULASI NILAI SPREADSHEET</h2>
-    <p class="text-slate-400 mb-4 text-sm">Data nilai siswa yang tersimpan di server</p>
+    <h2 class="text-3xl font-black text-yellow-400 mb-1">📊 REKAPITULASI NILAI SPREADSHEET</h2>
+    <p class="text-slate-400 mb-4 text-sm">Data nilai, soal terjawab, dan timer siswa yang tersimpan di server</p>
     
-    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full max-w-2xl max-h-[60vh] overflow-y-auto mb-4">
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-4 shadow-2xl">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
-            <th class="p-2">Nama Siswa</th>
-            <th class="p-2">Nilai</th>
+            <th class="p-3">Nama Siswa</th>
+            <th class="p-3">Nilai</th>
+            <th class="p-3">Soal Terjawab</th>
+            <th class="p-3">Timer</th>
           </tr>
         </thead>
         <tbody id="tabelNilaiBody">
-          <tr><td colspan="2" class="p-4 text-center text-slate-400">Memuat data nilai...</td></tr>
+          <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat data rekap nilai...</td></tr>
         </tbody>
       </table>
     </div>
 
-    <button onclick="tutupModalNilaiSheet()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-2 rounded-xl shadow">
+    <button onclick="tutupModalNilaiSheet()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-3 rounded-xl shadow">
       Tutup ❌
     </button>
   </div>
@@ -260,22 +262,36 @@
     }
     initData();
 
-    // Fungsi untuk membuka modal rekap nilai dari Sheet
+    // Fungsi untuk mengambil dan menampilkan rekap nilai dari Sheet ke modal
     async function bukaModalNilaiSheet() {
       const modal = document.getElementById("modalNilaiSheet");
       const tbody = document.getElementById("tabelNilaiBody");
-      tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-slate-400">Memuat data rekap nilai...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat rekap nilai dari server...</td></tr>`;
       modal.classList.remove("hidden");
       modal.classList.add("flex");
 
       try {
-        let res = await fetch(API_URL + "?action=getSiswa");
-        // Kita gunakan fetch tambahan atau ambil data dari endpoint rekap jika tersedia, 
-        // namun karena endpoint getSiswa memfilter siswa yang belum ada nilai, kita bisa buat fetch langsung ke sheet Nilai jika diinginkan atau menampilkan cache.
-        // Sebagai alternatif praktis, kita ambil data siswa keseluruhan atau tampilkan pesan.
-        tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-yellow-300">Silakan cek langsung di Google Spreadsheet pada tab sheet "Nilai" untuk melihat rekapitulasi lengkap seluruh siswa.</td></tr>`;
+        let res = await fetch(API_URL + "?action=getRekapNilai");
+        let rekapData = await res.json();
+
+        tbody.innerHTML = "";
+        if (!rekapData || rekapData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada data nilai yang tersimpan di Spreadsheet.</td></tr>`;
+          return;
+        }
+
+        rekapData.forEach(row => {
+          tbody.innerHTML += `
+            <tr class="border-b border-slate-700">
+              <td class="p-3 font-semibold text-cyan-300">${row.nama}</td>
+              <td class="p-3">${row.nilai}</td>
+              <td class="p-3">${row.soal}</td>
+              <td class="p-3 text-slate-400">${row.timer}</td>
+            </tr>
+          `;
+        });
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-red-400">Gagal memuat data nilai.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-400">Gagal memuat data dari Spreadsheet. Periksa koneksi atau URL API Anda.</td></tr>`;
       }
     }
 
