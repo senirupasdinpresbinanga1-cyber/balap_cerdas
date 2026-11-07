@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
@@ -15,7 +14,7 @@
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
 
-  <!-- OVERLAY JIKA KELUAR FULLSCREEN SAAT GAME BERJALAN -->
+  <!-- OVERLAY FULLSCREEN GUARD -->
   <div id="fullscreenNotice" class="fixed inset-0 bg-red-900/90 z-50 hidden flex-col items-center justify-center text-center p-6 backdrop-blur-md">
     <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
     <p class="text-xl mb-6">Layar harus dalam mode Fullscreen untuk melanjutkan permainan!</p>
@@ -24,7 +23,7 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (HALAMAN AWAL - TIDAK FULLSCREEN) -->
+  <!-- MODAL CATATAN MATERI (HALAMAN AWAL) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
     
@@ -52,7 +51,7 @@
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI (MUNCUL 4 NAMA SISWA & TOMBOL MULAI) -->
+  <!-- MODAL PERSIAPAN SESI (MUNCUL PER SESI) -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
     <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
@@ -66,16 +65,16 @@
 
   <!-- CONTAINER UTAMA GAME BALAP CERDAS -->
   <div class="h-full flex flex-col justify-between p-4">
-    <!-- HEADER & TIMER -->
+    <!-- HEADER & TIMER (5 MENIT) -->
     <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
       <div>
         <h2 class="text-xl font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
       </div>
-      <div class="text-3xl font-black tracking-wider text-cyan-400" id="timer">10:00</div>
+      <div class="text-3xl font-black tracking-wider text-cyan-400" id="timer">05:00</div>
       <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
     </div>
 
-    <!-- AREA BALAPAN (4 TRACKS BERJALAN) -->
+    <!-- AREA BALAPAN (4 JALUR) -->
     <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
       <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
         <div class="track-line h-full w-1/10"></div>
@@ -92,11 +91,11 @@
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
-    <!-- AREA SOAL (4 KOLOM DENGAN DUKUNGAN MULTI-TOUCH) -->
+    <!-- AREA SOAL 4 PLAYER MULTI-TOUCH -->
     <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
   </div>
 
-  <!-- MODAL BOARD JUARA / TOP SERVER (DISEMBUNYIKAN DI AWAL) -->
+  <!-- MODAL LEADERBOARD / JUARA TOP SERVER -->
   <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/98 z-50 hidden flex-col items-center justify-center p-8">
     <h1 class="text-4xl font-black text-yellow-400 mb-2">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
     <p class="text-slate-400 mb-6">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
@@ -135,12 +134,11 @@
     let pemainAktif = [];
     let sesiKe = 1;
     let timerInterval = null;
-    let waktuDetik = 600;
+    let waktuDetik = 300; // 5 Menit (300 Detik)
     let hasilSemuaSesi = [];
     let kelompokSementara = [];
     let isGameRunning = false;
 
-    // Web Audio API untuk Sound Effects (Benar/Salah dan "Tung" "Tung" Timer 15 Detik)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(freq, duration) {
       try {
@@ -155,7 +153,6 @@
       } catch(e) {}
     }
 
-    // Sound effect khusus "tung" "tung" saat 15 detik terakhir
     function playTungSound() {
       playSound(300, 0.15);
     }
@@ -167,7 +164,6 @@
       else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
     }
 
-    // Deteksi Fullscreen Guard
     document.addEventListener("fullscreenchange", checkFullscreenState);
     document.addEventListener("webkitfullscreenchange", checkFullscreenState);
     document.addEventListener("mozfullscreenchange", checkFullscreenState);
@@ -197,7 +193,7 @@
       }
 
       if (!semuaSiswa || semuaSiswa.length === 0) {
-        alert("Data siswa di Sheet 'Nama' kosong atau sudah memiliki nilai semua!");
+        alert("Data siswa di Sheet 'Nama' kosong atau sudah memiliki nilai semua di Sheet 'Nilai'!");
       } else {
         siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
       }
@@ -206,7 +202,7 @@
 
     function bukaPersiapanSesi() {
       if (siswaAntrean.length === 0) {
-        alert("Semua antrean siswa habis atau sudah dinilai! Menampilkan papan peringkat.");
+        alert("Semua antrean siswa habis! Menampilkan papan peringkat server.");
         tampilkanLeaderboard();
         return;
       }
@@ -215,6 +211,7 @@
         alert("Peringatan: Bank soal dari Sheet 'Soal' belum termuat.");
       }
 
+      // Mengambil 4 siswa berikutnya untuk sesi ini
       kelompokSementara = siswaAntrean.splice(0, 4);
 
       document.getElementById("materiModal").classList.add("hidden");
@@ -305,7 +302,7 @@
         `;
       });
 
-      // Multi-touch pointerdown handler untuk Smart Board
+      // Pointerdown eventlistener khusus multi-touch layar sentuh Smart Board
       document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
@@ -324,10 +321,10 @@
 
       if (optIdx === currentSoal.c) {
         playSound(600, 0.1);
-        p.langkah++; // Maju 1 langkah saat benar
+        p.langkah++;
         p.benar++;
       } else {
-        playSound(200, 0.2); // Diam di tempat saat salah
+        playSound(200, 0.2);
       }
 
       p.soalIndex = (p.soalIndex + 1) % p.soalDipakai.length;
@@ -342,14 +339,13 @@
 
     function startTimer() {
       clearInterval(timerInterval);
-      waktuDetik = 600;
+      waktuDetik = 300; // Reset ke 5 menit per sesi
       updateTimerDisplay();
 
       timerInterval = setInterval(() => {
         waktuDetik--;
         updateTimerDisplay();
 
-        // Sound effect "tung" "tung" ketika sisa waktu <= 15 detik sampai 0 detik
         if (waktuDetik <= 15 && waktuDetik > 0) {
           playTungSound();
         }
@@ -367,7 +363,6 @@
       let timerEl = document.getElementById("timer");
       timerEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       
-      // Berikan efek kedip merah pada teks timer saat 15 detik terakhir
       if (waktuDetik <= 15) {
         timerEl.classList.add("text-red-500", "animate-pulse");
       } else {
@@ -377,6 +372,7 @@
 
     function akhiriSesi() {
       clearInterval(timerInterval);
+      isGameRunning = false;
       
       let dataHasilSesi = pemainAktif.map(p => {
         let skor = 0;
@@ -399,7 +395,7 @@
           skorAkhir: skor,
           tampilSkor: tampilSkor,
           soalTerjawabFormat: `${p.benar}/${p.totalJawab}`,
-          waktuDetik: 600 - waktuDetik,
+          waktuDetik: 300 - waktuDetik,
           totalJawab: p.totalJawab
         };
       });
@@ -407,9 +403,9 @@
       hasilSemuaSesi.push(...dataHasilSesi);
       kirimKeSpreadsheet(dataHasilSesi);
 
+      // Transisi Otomatis: Jika antrean siswa masih ada, langsung buka persiapan sesi berikutnya
       if (siswaAntrean.length > 0) {
         sesiKe++;
-        alert(`Sesi ${sesiKe - 1} Selesai! Klik OK untuk melanjutkan ke Sesi berikutnya.`);
         bukaPersiapanSesi();
       } else {
         selesaikanSemuaSesi();
