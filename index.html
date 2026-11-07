@@ -23,22 +23,22 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI -->
+  <!-- MODAL CATATAN MATERI (DIUBAH MENJADI SILAHKAN MEMBACA) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
-    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
+    <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 SILAHKAN MEMBACA</h1>
     
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
-      <p><b>1. Imajinasi:</b> Imajinasi adalah kemampuan seseorang untuk membayangkan sesuatu yang belum tentu ada atau pernah dilihat. Imajinasi membantu kita menemukan ide dan menghasilkan karya seni yang unik. Contohnya membayangkan rumah di atas awan, hewan khayalan, atau kendaraan terbang.</p>
+      <p><b>1. Imajinasi:</b> Imajinasi adalah kemampuan seseorang untuk membayangkan sesuatu yang belum tentu ada atau terjadi. Imajinasi sangat penting dalam seni rupa karena dapat membantu menghasilkan ide dan karya baru. Contohnya membayangkan rumah di atas awan atau mobil yang bisa terbang. Imajinasi dapat dikembangkan dengan mengamati lingkungan, mencari inspirasi, dan berani mencoba hal baru.</p>
       
-      <p><b>2. Cara Membuat Maket:</b> Maket adalah miniatur atau tiruan suatu benda atau bangunan dengan ukuran lebih kecil dari aslinya. Bahan yang digunakan antara lain kardus, karton, kertas warna, dan stik es krim. Cara membuat maket dimulai dengan menentukan tema, membuat sketsa, menyiapkan alat dan bahan, mengukur, memotong, merangkai, menempel, serta memberikan warna dan hiasan.</p>
+      <p><b>2. Maket:</b> Maket adalah miniatur atau tiruan suatu benda atau bangunan yang dibuat dengan ukuran lebih kecil dari ukuran sebenarnya. Contohnya miniatur gedung sekolah, rumah, dan taman. Bahan yang dapat digunakan untuk membuat maket adalah kardus, karton, stik es krim, dan kertas. Langkah membuat maket dimulai dari menentukan tema, membuat sketsa, mengukur dan memotong bahan, merangkai menggunakan lem, kemudian memberikan warna dan merapikannya.</p>
       
-      <p><b>3. Kreatif:</b> Kreatif adalah kemampuan menghasilkan ide atau karya baru yang menarik dan bermanfaat. Orang kreatif berani mencoba hal baru, memiliki banyak ide, dan tidak mudah menyerah. Contohnya membuat tempat pensil dari botol bekas atau membuat hiasan dari kardus bekas.</p>
+      <p><b>3. Kreatif:</b> Kreatif adalah kemampuan menghasilkan ide, gagasan, atau karya baru yang menarik dan bermanfaat. Sikap kreatif dapat ditunjukkan dengan memanfaatkan barang bekas menjadi benda berguna, seperti membuat tempat pensil dari botol bekas atau hiasan dari kertas bekas. Orang kreatif memiliki banyak ide, berani mencoba hal baru, dan tidak mudah menyerah ketika hasil karyanya belum bagus. Menggunakan barang bekas juga dapat membantu mengurangi sampah dan menjaga lingkungan.</p>
       
-      <p><b>4. Perbedaan Seni Rupa 2 Dimensi dan 3 Dimensi:</b> Seni rupa 2 dimensi adalah karya seni yang memiliki panjang dan lebar, tetapi tidak memiliki volume nyata. Contohnya gambar, lukisan, foto, dan poster. Seni rupa 3 dimensi adalah karya seni yang memiliki panjang, lebar, tinggi, dan volume sehingga dapat dilihat dari berbagai arah. Contohnya patung, vas bunga, miniatur rumah, dan kerajinan tanah liat.</p>
+      <p><b>4. Seni Rupa 2 Dimensi:</b> Seni Rupa 2 Dimensi adalah karya seni yang memiliki dua ukuran utama, yaitu panjang dan lebar. Karya ini hanya dapat dilihat dari satu arah atau sisi tertentu. Contohnya lukisan, gambar, poster, dan foto.</p>
       
-      <p><b>5. Logika:</b> Logika adalah kemampuan berpikir secara masuk akal untuk menemukan jawaban dan menyelesaikan masalah. Logika dapat digunakan untuk menghitung, menemukan pola, dan mengambil keputusan. Contohnya, jika pola warna adalah merah, biru, merah, biru, maka warna berikutnya adalah merah.</p>
+      <p><b>5. Seni Rupa 3 Dimensi:</b> Seni Rupa 3 Dimensi adalah karya seni yang memiliki tiga ukuran, yaitu panjang, lebar, dan tinggi. Karya ini memiliki volume atau isi sehingga dapat dilihat dari berbagai arah. Contohnya patung, maket, vas bunga, dan miniatur rumah.</p>
       
-      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat poin-poin materi di atas ke buku catatan Anda sebelum permainan dimulai!</p>
+      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan baca materi di atas dengan teliti sebelum permainan dimulai!</p>
     </div>
 
     <div class="flex justify-center gap-4 mt-6">
@@ -272,7 +272,6 @@
 
       pemainAktif.forEach((p, idx) => {
         let currentSoal = p.soalDipakai[p.soalIndex];
-        // Batas maksimal soal disesuaikan menjadi 25 soal
         if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 25) {
           grid.innerHTML += `
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center">
