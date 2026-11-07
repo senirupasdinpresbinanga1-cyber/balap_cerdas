@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
@@ -36,7 +36,7 @@
       
       <p><b>4. Seni Rupa 2 Dimensi:</b> Seni Rupa 2 Dimensi adalah karya seni yang memiliki dua ukuran utama, yaitu panjang dan lebar. Karya ini hanya dapat dilihat dari satu arah atau sisi tertentu. Contohnya lukisan, gambar, poster, dan foto.</p>
       
-      <p><b>5. Seni Rupa 3 Dimensi:</b> Seni Rupa 3 Dimensi adalah karya seni yang memiliki tiga ukuran, yaitu panjang, lebar, dan tinggi. Karya ini memiliki volume atau isi sehingga dapat dilihat dari berbagai arah. Contohnya patung, maket, vas bunga, dan miniatur rumah.</p>
+      <p><b>5. Seni Rupa 3 Dimensi:</b> Seni Rupa 3 Dimensi adalah karya seni yang memiliki tiga ukuran, yaitu panjang, lebar, dan tinggi. Karya ini memiliki volume atau isi sehingga dapat dilihat dari berbagai arah. Contohnya patung, vas bunga, vas bunga, dan miniatur rumah.</p>
       
       <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan baca materi di atas dengan teliti sebelum permainan dimulai!</p>
     </div>
@@ -51,7 +51,7 @@
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI (FORMAT ANGKA 1-4 & TOMBOL SKIP SEBELAH KIRI) -->
+  <!-- MODAL PERSIAPAN SESI -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
     <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-2xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
@@ -94,7 +94,7 @@
     <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
   </div>
 
-  <!-- MODAL LEADERBOARD (BACKGROUND POLOS & BISA DI-SCROLL) -->
+  <!-- MODAL LEADERBOARD -->
   <div id="leaderboardModal" class="fixed inset-0 bg-slate-900 z-50 hidden flex-col items-center justify-center p-6 overflow-y-auto">
     <h1 class="text-3xl font-black text-yellow-400 mb-1 text-center">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
     <p class="text-slate-400 mb-4 text-sm text-center">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
@@ -138,7 +138,10 @@
     let kelompokSementara = [];
     let isGameRunning = false;
 
+    // Web Audio API untuk Sound Effects & Backsound Musik Ceria
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let bgmInterval = null;
+
     function playSound(freq, duration) {
       try {
         let osc = audioCtx.createOscillator();
@@ -154,6 +157,36 @@
 
     function playTungSound() {
       playSound(300, 0.15);
+    }
+
+    // Generator Backsound Musik Ceria saat Game Berjalan
+    function startBGM() {
+      stopBGM();
+      const melodi = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+      let step = 0;
+      bgmInterval = setInterval(() => {
+        if (!isGameRunning) return;
+        try {
+          let note = melodi[Math.floor(Math.random() * melodi.length)];
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = note;
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        } catch(e) {}
+      }, 400);
+    }
+
+    function stopBGM() {
+      if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
+      }
     }
 
     function requestFullScreen() {
@@ -202,6 +235,7 @@
     initData();
 
     function bukaPersiapanSesi() {
+      stopBGM();
       if (kelompokSementara.length === 0) {
         if (siswaAntrean.length === 0) {
           alert("Semua antrean siswa habis! Menampilkan papan peringkat server.");
@@ -245,7 +279,6 @@
     function skipSiswa(index) {
       let siswaDiSkip = kelompokSementara[index];
       
-      // Simpan data Absen ke spreadsheet
       let dataAbsen = [{
         nama: siswaDiSkip,
         skorAkhir: "Absen",
@@ -257,7 +290,6 @@
       
       kirimKeSpreadsheet(dataAbsen);
 
-      // Gantikan posisi siswa yang di-skip dengan siswa antrean berikutnya
       if (siswaAntrean.length > 0) {
         kelompokSementara[index] = siswaAntrean.shift();
       } else {
@@ -293,6 +325,7 @@
       renderArena();
       renderSoal();
       startTimer();
+      startBGM(); // Mulai memutar musik backsound
     }
 
     function renderArena() {
@@ -416,6 +449,7 @@
 
     function akhiriSesi() {
       clearInterval(timerInterval);
+      stopBGM(); // Matikan backsound saat sesi berakhir
       isGameRunning = false;
       
       let dataHasilSesi = pemainAktif.map(p => {
@@ -447,7 +481,7 @@
       hasilSemuaSesi.push(...dataHasilSesi);
       kirimKeSpreadsheet(dataHasilSesi);
 
-      kelompokSementara = []; // Kosongkan kelompok setelah selesai sesi
+      kelompokSementara = [];
 
       if (siswaAntrean.length > 0) {
         sesiKe++;
@@ -473,6 +507,7 @@
     function selesaikanSemuaSesi() {
       isGameRunning = false;
       clearInterval(timerInterval);
+      stopBGM();
       tampilkanLeaderboard();
     }
 
