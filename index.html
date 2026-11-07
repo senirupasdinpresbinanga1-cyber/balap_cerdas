@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
@@ -23,7 +23,7 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (HALAMAN AWAL) -->
+  <!-- MODAL CATATAN MATERI -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
     
@@ -51,11 +51,11 @@
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI (MUNCUL PER SESI) -->
+  <!-- MODAL PERSIAPAN SESI -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
     <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
-      <p class="text-slate-300">Berikut adalah 4 siswa yang terpilih untuk bertanding pada sesi ini:</p>
+      <p class="text-slate-300">Berikut adalah siswa yang terpilih untuk bertanding pada sesi ini:</p>
       <div id="listSiswaPersiapan" class="grid grid-cols-2 gap-3 text-lg font-bold"></div>
       <button onclick="mulaiGameSesiIni()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-black text-2xl py-4 rounded-xl shadow-lg transition transform hover:scale-105">
         MULAI GAME SEKARANG 🏁
@@ -63,9 +63,8 @@
     </div>
   </div>
 
-  <!-- CONTAINER UTAMA GAME BALAP CERDAS -->
-  <div class="h-full flex flex-col justify-between p-4">
-    <!-- HEADER & TIMER (5 MENIT) -->
+  <!-- CONTAINER UTAMA GAME -->
+  <div id="gameContainer" class="h-full flex flex-col justify-between p-4">
     <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
       <div>
         <h2 class="text-xl font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
@@ -74,7 +73,6 @@
       <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
     </div>
 
-    <!-- AREA BALAPAN (4 JALUR) -->
     <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
       <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
         <div class="track-line h-full w-1/10"></div>
@@ -91,24 +89,23 @@
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
-    <!-- AREA SOAL 4 PLAYER MULTI-TOUCH -->
     <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
   </div>
 
-  <!-- MODAL LEADERBOARD / JUARA TOP SERVER -->
-  <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/98 z-50 hidden flex-col items-center justify-center p-8">
-    <h1 class="text-4xl font-black text-yellow-400 mb-2">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
-    <p class="text-slate-400 mb-6">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
+  <!-- MODAL LEADERBOARD (BACKGROUND POLOS & BISA DI-SCROLL) -->
+  <div id="leaderboardModal" class="fixed inset-0 bg-slate-900 z-50 hidden flex-col items-center justify-center p-6 overflow-y-auto">
+    <h1 class="text-3xl font-black text-yellow-400 mb-1 text-center">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
+    <p class="text-slate-400 mb-4 text-sm text-center">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
 
-    <div id="pdfContent" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-3xl max-h-96 overflow-y-auto mb-6">
+    <div id="pdfContent" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="border-b border-slate-600 text-yellow-400">
-            <th class="p-2">Pos</th>
-            <th class="p-2">Nama Siswa</th>
-            <th class="p-2">Soal Terjawab</th>
-            <th class="p-2">Nilai Akhir</th>
-            <th class="p-2">Waktu Pengerjaan</th>
+          <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
+            <th class="p-3">Pos</th>
+            <th class="p-3">Nama Siswa</th>
+            <th class="p-3">Soal Terjawab</th>
+            <th class="p-3">Nilai Akhir</th>
+            <th class="p-3">Waktu Pengerjaan</th>
           </tr>
         </thead>
         <tbody id="leaderboardBody"></tbody>
@@ -116,10 +113,10 @@
     </div>
 
     <div class="flex gap-4">
-      <button onclick="cetakPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow">
+      <button onclick="cetakPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
         📄 Cetak PDF
       </button>
-      <button onclick="location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow">
+      <button onclick="location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
         🔄 Reset Game
       </button>
     </div>
@@ -134,7 +131,7 @@
     let pemainAktif = [];
     let sesiKe = 1;
     let timerInterval = null;
-    let waktuDetik = 300; // 5 Menit (300 Detik)
+    let waktuDetik = 300; // 5 Menit
     let hasilSemuaSesi = [];
     let kelompokSementara = [];
     let isGameRunning = false;
@@ -211,7 +208,6 @@
         alert("Peringatan: Bank soal dari Sheet 'Soal' belum termuat.");
       }
 
-      // Mengambil 4 siswa berikutnya untuk sesi ini
       kelompokSementara = siswaAntrean.splice(0, 4);
 
       document.getElementById("materiModal").classList.add("hidden");
@@ -302,7 +298,6 @@
         `;
       });
 
-      // Pointerdown eventlistener khusus multi-touch layar sentuh Smart Board
       document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
@@ -339,7 +334,7 @@
 
     function startTimer() {
       clearInterval(timerInterval);
-      waktuDetik = 300; // Reset ke 5 menit per sesi
+      waktuDetik = 300;
       updateTimerDisplay();
 
       timerInterval = setInterval(() => {
@@ -384,7 +379,7 @@
         } else if (p.benar > 10) {
           let bonus = p.benar - 10;
           skor = p.benar;
-          tampilSkor = `10 + <span class="text-green-400 font-bold">${bonus}</span>`;
+          tampilSkor = `10 + ${bonus}`;
         } else {
           skor = p.benar;
           tampilSkor = `${p.benar}`;
@@ -403,7 +398,6 @@
       hasilSemuaSesi.push(...dataHasilSesi);
       kirimKeSpreadsheet(dataHasilSesi);
 
-      // Transisi Otomatis: Jika antrean siswa masih ada, langsung buka persiapan sesi berikutnya
       if (siswaAntrean.length > 0) {
         sesiKe++;
         bukaPersiapanSesi();
@@ -412,10 +406,12 @@
       }
     }
 
+    // Menggunakan mode no-cors agar POST request berhasil terkirim ke Google Apps Script tanpa terhalang browser
     async function kirimKeSpreadsheet(results) {
       try {
         await fetch(API_URL, {
           method: "POST",
+          mode: "no-cors",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "saveResults", results: results })
         });
@@ -431,6 +427,8 @@
     }
 
     function tampilkanLeaderboard() {
+      document.getElementById("gameContainer").classList.add("hidden");
+
       document.getElementById("leaderboardModal").classList.remove("hidden");
       document.getElementById("leaderboardModal").classList.add("flex");
 
@@ -450,11 +448,11 @@
 
         tbody.innerHTML += `
           <tr class="border-b border-slate-700">
-            <td class="p-2 font-bold">${idx + 1}</td>
-            <td class="p-2 font-semibold text-cyan-300">${r.nama}</td>
-            <td class="p-2">${r.soalTerjawabFormat}</td>
-            <td class="p-2">${r.tampilSkor}</td>
-            <td class="p-2 text-slate-400">${waktuStr}</td>
+            <td class="p-3 font-bold">${idx + 1}</td>
+            <td class="p-3 font-semibold text-cyan-300">${r.nama}</td>
+            <td class="p-3">${r.soalTerjawabFormat}</td>
+            <td class="p-3">${r.tampilSkor}</td>
+            <td class="p-3 text-slate-400">${waktuStr}</td>
           </tr>
         `;
       });
@@ -462,12 +460,15 @@
 
     function cetakPDF() {
       const element = document.getElementById("pdfContent");
-      html2pdf().from(element).set({
-        margin: 10,
-        filename: 'Hasil_Balap_Cerdas_SeniRupa.pdf',
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-      }).save();
+      const opt = {
+        margin:       10,
+        filename:     'Hasil_Peringkat_Balap_Cerdas_SeniRupa.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().from(element).set(opt).save();
     }
   </script>
 </body>
