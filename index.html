@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
   <style>
@@ -12,13 +11,12 @@
     .character { transition: all 0.3s ease-in-out; }
     .fullscreen-overlay { display: none; }
     body.game-started:not(:fullscreen) .fullscreen-overlay { display: flex; }
-    /* Mencegah seleksi teks dan memastikan touch responsif untuk banyak jari */
     button { touch-action: manipulation; }
   </style>
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
 
-  <!-- OVERLAY JIKA KELUAR FULLSCREEN SETELAH GAME DIMULAI -->
+  <!-- OVERLAY FULLSCREEN GUARD -->
   <div id="fullscreenNotice" class="fullscreen-overlay fixed inset-0 bg-red-900/90 z-50 flex-col items-center justify-center text-center p-6 backdrop-blur-md">
     <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
     <p class="text-xl mb-6">Layar harus dalam mode Fullscreen untuk melanjutkan permainan!</p>
@@ -27,15 +25,21 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (TIDAK FULLSCREEN) -->
+  <!-- MODAL CATATAN MATERI -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <h1 class="text-3xl font-bold text-yellow-400 mb-4 text-center">🎨 CATATAN MATERI SENI RUPA</h1>
     
-    <!-- TEMPAT PASTE CATATAN ANDA DI SINI -->
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
-      <p><b>1. Imajinasi & Kemampuan Berpikir Kreatif:</b> Imajinasi adalah kemampuan membayangkan atau menciptakan gambaran dalam pikiran untuk menghasilkan ide baru dalam berkarya.</p>
-      <p><b>2. Karya Maket:</b> Maket adalah miniatur atau tiruan suatu bangunan atau objek yang dibuat dengan ukuran lebih kecil dari ukuran sebenarnya. Bahan pembuatannya dapat berupa kardus, karton, dan lem.</p>
-      <p><b>3. Langkah Membuat Karya:</b> Menentukan tema, membuat sketsa rancangan awal, mengukur bahan, memotong, merangkai dengan lem, dan memberikan warna/hiasan.</p>
+      <p><b>1. Imajinasi:</b> Imajinasi adalah kemampuan seseorang untuk membayangkan sesuatu yang belum tentu ada atau pernah dilihat. Imajinasi membantu kita menemukan ide dan menghasilkan karya seni yang unik. Contohnya membayangkan rumah di atas awan, hewan khayalan, atau kendaraan terbang.</p>
+      
+      <p><b>2. Cara Membuat Maket:</b> Maket adalah miniatur atau tiruan suatu benda atau bangunan dengan ukuran lebih kecil dari aslinya. Bahan yang digunakan antara lain kardus, karton, kertas warna, dan stik es krim. Cara membuat maket dimulai dengan menentukan tema, membuat sketsa, menyiapkan alat dan bahan, mengukur, memotong, merangkai, menempel, serta memberikan warna dan hiasan.</p>
+      
+      <p><b>3. Kreatif:</b> Kreatif adalah kemampuan menghasilkan ide atau karya baru yang menarik dan bermanfaat. Orang kreatif berani mencoba hal baru, memiliki banyak ide, dan tidak mudah menyerah. Contohnya membuat tempat pensil dari botol bekas atau membuat hiasan dari kardus bekas.</p>
+      
+      <p><b>4. Perbedaan Seni Rupa 2 Dimensi dan 3 Dimensi:</b> Seni rupa 2 dimensi adalah karya seni yang memiliki panjang dan lebar, tetapi tidak memiliki volume nyata. Contohnya gambar, lukisan, foto, dan poster. Seni rupa 3 dimensi adalah karya seni yang memiliki panjang, lebar, tinggi, dan volume sehingga dapat dilihat dari berbagai arah. Contohnya patung, vas bunga, miniatur rumah, dan kerajinan tanah liat.</p>
+      
+      <p><b>5. Logika:</b> Logika adalah kemampuan berpikir secara masuk akal untuk menemukan jawaban dan menyelesaikan masalah. Logika dapat digunakan untuk menghitung, menemukan pola, dan mengambil keputusan. Contohnya, jika pola warna adalah merah, biru, merah, biru, maka warna berikutnya adalah merah.</p>
+      
       <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat poin-poin materi di atas ke buku catatan Anda sebelum permainan dimulai!</p>
     </div>
 
@@ -43,13 +47,13 @@
       <button onclick="bukaPersiapanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-xl px-8 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
         LANJUT KE PERSIAPAN SESI 🚀
       </button>
-      <button onclick="resetAntreanLokal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-xl">
-        🔄 Muat Ulang Data Siswa
+      <button onclick="initData()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-xl">
+        🔄 Muat Ulang Data
       </button>
     </div>
   </div>
 
-  <!-- MODAL PERSIAPAN SESI (MUNCUL 4 NAMA SISWA & TOMBOL MULAI) -->
+  <!-- MODAL PERSIAPAN SESI -->
   <div id="persiapanModal" class="fixed inset-0 bg-slate-900/95 z-40 hidden flex-col items-center justify-center p-8">
     <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-xl w-full text-center space-y-6 shadow-2xl">
       <h2 id="infoSesiTitle" class="text-3xl font-black text-yellow-400">SESI 1 - BERSIAP</h2>
@@ -63,7 +67,6 @@
 
   <!-- CONTAINER UTAMA GAME -->
   <div class="h-full flex flex-col justify-between p-4">
-    <!-- HEADER & TIMER -->
     <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
       <div>
         <h2 class="text-xl font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
@@ -72,7 +75,6 @@
       <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
     </div>
 
-    <!-- AREA BALAPAN (ARENA 4 KARAKTER) -->
     <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
       <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
         <div class="track-line h-full w-1/10"></div>
@@ -89,11 +91,10 @@
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
-    <!-- AREA SOAL 4 PLAYER (MULTI-TOUCH SUPPORT) -->
     <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
   </div>
 
-  <!-- MODAL BOARD JUARA / TOP SERVER -->
+  <!-- MODAL LEADERBOARD / JUARA -->
   <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/98 z-50 hidden flex-col items-center justify-center p-8">
     <h1 class="text-4xl font-black text-yellow-400 mb-2">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
     <p class="text-slate-400 mb-6">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
@@ -165,39 +166,28 @@
         let resSoal = await fetch(API_URL + "?action=getSoal");
         bankSoal = await resSoal.json();
       } catch (err) {
-        console.log("Gagal memuat data dari Spreadsheet, menggunakan fallback.", err);
-        semuaSiswa = ["Ahmad", "Budi", "Citra", "Dewi", "Eko", "Fani", "Gilang", "Hana"];
-        bankSoal = [
-          { q: "Apa yang dimaksud dengan imajinasi?", a: ["Kemampuan membayangkan", "Menghitung angka", "Membaca cepat"], c: 0 }
-        ];
+        console.log("Gagal memuat data dari Spreadsheet.", err);
       }
 
       if (!semuaSiswa || semuaSiswa.length === 0) {
-        semuaSiswa = ["Siswa 1", "Siswa 2", "Siswa 3", "Siswa 4", "Siswa 5", "Siswa 6", "Siswa 7", "Siswa 8"];
+        alert("Data siswa di Sheet 'Nama' kosong atau sudah memiliki nilai semua!");
+      } else {
+        siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
       }
-
-      siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
     }
     initData();
 
-    function resetAntreanLokal() {
-      siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
-      sesiKe = 1;
-      alert("Data antrean berhasil dimuat ulang! Silakan lanjut ke persiapan sesi.");
-    }
-
     function bukaPersiapanSesi() {
       if (siswaAntrean.length === 0) {
-        alert("Semua antrean siswa habis! Menampilkan papan peringkat.");
+        alert("Semua antrean siswa habis atau sudah dinilai! Menampilkan papan peringkat.");
         tampilkanLeaderboard();
         return;
       }
 
       if (bankSoal.length === 0) {
-        alert("Peringatan: Bank soal kosong. Pastikan Sheet 'Soal' sudah terisi di Google Sheets.");
+        alert("Peringatan: Bank soal dari Sheet 'Soal' belum termuat.");
       }
 
-      // Ambil 4 siswa (atau sisa jika kurang dari 4) untuk sesi ini
       kelompokSementara = siswaAntrean.splice(0, 4);
 
       document.getElementById("materiModal").classList.add("hidden");
@@ -288,7 +278,7 @@
         `;
       });
 
-      // Event listener menggunakan pointerdown agar mendukung multi-touch secara serentak (4 orang sekaligus)
+      // Event listener dengan multi-touch untuk 4 area layar sentuh secara simultan
       document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
