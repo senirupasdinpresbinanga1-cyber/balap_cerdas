@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PERBAIKAN URL CDN: diubah dari .min.min.js menjadi .min.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Library html2canvas untuk Cetak / Download JPG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
@@ -24,7 +24,7 @@
     </button>
   </div>
 
-  <!-- MODAL CATATAN MATERI (SILAHKAN DI CATAT & TOMBOL LIHAT NILAI) -->
+  <!-- MODAL CATATAN MATERI (DINAMIS DARI SPREADSHEET) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
     <div class="flex justify-between items-center max-w-4xl mx-auto w-full mb-4">
       <h1 class="text-3xl font-bold text-yellow-400 text-center flex-grow">🎨 SILAHKAN DI CATAT</h1>
@@ -33,25 +33,11 @@
       </button>
     </div>
     
-    <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl mx-auto space-y-4 text-base leading-relaxed">
-      <h2 class="text-2xl font-extrabold text-yellow-400 mb-2">Prinsip-Prinsip Seni Rupa (Ritme dan Pola)</h2>
-      <p>Prinsip seni rupa adalah ketentuan dasar yang menunjang semua unsur seni rupa agar dapat menjadi sebuah karya yang memiliki nilai keindahan. Prinsip seni rupa di antaranya meliputi ritme dan pola.</p>
-      
-      <p><b>1. Ritme atau Irama:</b><br>
-      Irama dalam prinsip seni rupa merupakan suatu bentuk pengulangan satu unsur atau lebih secara teratur dan terus-menerus pada gambar. Pengulangan tersebut menciptakan kesan bergerak. Ritme ini bisa tercipta hanya dari satu unsur saja maupun lebih dari satu unsur.<br>
-      <b>Pandangan Para Ahli:</b><br>
-      - <i>Menurut Rathus:</i> Ritme dapat dilihat dengan pengelompokan unsur-unsur bentuk yang repetitif seperti garis, bentuk, dan warna. Sedikit perubahan dalam ritme, baik dalam seni musik maupun seni rupa, dapat menambah daya tarik, tetapi perubahan yang besar dapat menyebabkan kesan tidak mengenakkan.<br>
-      - <i>Menurut Kartika:</i> Irama merupakan suatu pengulangan unsur-unsur pendukung karya seni. Pengulangan ini merupakan selisih antara dua wujud yang terletak antara ruang dan waktu, serupa dengan interval waktu antara dua nada musik beruntun yang sama.<br>
-      - <i>Menurut Fadjar Sidik:</i> Irama atau ritme ialah suatu pengulangan yang secara terus-menerus dan teratur dari suatu unsur atau unsur-unsur.<br>
-      <b>Contoh Ritme:</b> Pengulangan bentuk lingkaran berjajar ke samping dengan jarak konsisten (ritme satu unsur) atau pengulangan berselang-seling antara lingkaran dan belah ketupat.</p>
-      
-      <p><b>2. Pola:</b><br>
-      Pola merupakan susunan unsur rupa yang terasa utuh, jelas, dan menarik. Pola memiliki ritme serta susunan penataan tertentu. Berdasarkan penataannya, pola terdiri atas tiga jenis berikut:<br>
-      - <b>Pola Simetris:</b> Susunan objek antara bagian kanan-kiri atau atas-bawah akan tampak sama. <i>Contoh:</i> Objek persegi, lingkaran, dan bintang di sisi kiri mempunyai bentuk dan posisi yang persis sama dengan sisi kanannya.<br>
-      - <b>Pola Asimetris:</b> Susunan objek antara bagian kanan-kiri atau atas-bawah akan tampak tidak sama. <i>Contoh:</i> Penataan bentuk di sisi kiri dan kanan diletakkan secara berbeda, namun tetap seimbang secara visual.<br>
-      - <b>Pola Informal atau Bebas:</b> Susunan objek yang tidak teratur, di mana seseorang bebas meletakkan bentuk tanpa terikat aturan simetris/asimetris yang kaku. <i>Contoh:</i> Penempatan berbagai bentuk bangun secara tersebar acak namun tetap estetis.</p>
-      
-      <p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat materi di atas dengan teliti sebelum permainan dimulai!</p>
+    <!-- Kontainer Catatan yang ditarik langsung dari Sheet "Catatan" -->
+    <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl w-full mx-auto space-y-4 text-base leading-relaxed">
+      <div class="text-center text-slate-400 py-8 animate-pulse">
+        ⏳ Memuat catatan materi dari database Spreadsheet...
+      </div>
     </div>
 
     <div class="flex justify-center gap-4 mt-6">
@@ -64,13 +50,13 @@
     </div>
   </div>
 
-  <!-- MODAL LIHAT REKAP NILAI (DILENGKAPI TOMBOL CETAK PDF) -->
+  <!-- MODAL LIHAT REKAP NILAI (DILENGKAPI TOMBOL CETAK JPG) -->
   <div id="modalNilaiSheet" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex-col items-center justify-center p-6 overflow-y-auto">
     <h2 class="text-3xl font-black text-yellow-400 mb-1">📊 REKAPITULASI NILAI SPREADSHEET</h2>
     <p class="text-slate-400 mb-4 text-sm">Data nilai, soal terjawab, dan timer siswa yang tersimpan di server</p>
     
-    <div id="pdfContentSheet" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
-      <h3 class="pdf-title hidden text-xl font-bold text-black mb-4 text-center">REKAPITULASI NILAI - BALAP CERDAS SENI RUPA</h3>
+    <div id="jpgContentSheet" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
+      <h3 class="jpg-title hidden text-xl font-bold text-black mb-4 text-center">REKAPITULASI NILAI - BALAP CERDAS</h3>
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
@@ -88,8 +74,8 @@
     </div>
 
     <div class="flex gap-4">
-      <button onclick="cetakPDFSheet()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
-        📄 Cetak PDF
+      <button onclick="cetakJPGSheet()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
+        🖼️ Cetak JPG
       </button>
       <button onclick="tutupModalNilaiSheet()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
         Tutup ❌
@@ -145,8 +131,8 @@
     <h1 class="text-3xl font-black text-yellow-400 mb-1 text-center">🏆 PAPAN PERINGKAT TOP SERVER 🏆</h1>
     <p class="text-slate-400 mb-4 text-sm text-center">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
 
-    <div id="pdfContent" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
-      <h3 class="pdf-title hidden text-xl font-bold text-black mb-4 text-center">HASIL PERINGKAT BALAP CERDAS - SENI RUPA</h3>
+    <div id="jpgContent" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
+      <h3 class="jpg-title hidden text-xl font-bold text-black mb-4 text-center">HASIL PERINGKAT BALAP CERDAS</h3>
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
@@ -162,8 +148,8 @@
     </div>
 
     <div class="flex gap-4">
-      <button onclick="cetakPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
-        📄 Cetak PDF
+      <button onclick="cetakJPG()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
+        🖼️ Cetak JPG
       </button>
       <button onclick="location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
         🔄 Reset Game
@@ -257,7 +243,41 @@
       }
     }
 
+    // FUNGSI MEMUAT CATATAN DARI SHEET "Catatan"
+    async function loadCatatan() {
+      const container = document.getElementById("kontenCatatan");
+      container.innerHTML = `<div class="text-center text-slate-400 py-8 animate-pulse">⏳ Memuat catatan materi dari database Spreadsheet...</div>`;
+      
+      try {
+        let resCatatan = await fetch(API_URL + "?action=getCatatan");
+        let dataCatatan = await resCatatan.json();
+
+        if (!dataCatatan || dataCatatan.length === 0) {
+          container.innerHTML = `<div class="text-center text-yellow-400 py-6">Belum ada data catatan di Sheet 'Catatan'.</div>`;
+          return;
+        }
+
+        let html = "";
+        dataCatatan.forEach(item => {
+          html += `
+            <div class="mb-4">
+              <h2 class="text-2xl font-extrabold text-yellow-400 mb-2">${item.judul || ''}</h2>
+              <div class="whitespace-pre-line text-slate-100">${item.isi || ''}</div>
+            </div>
+          `;
+        });
+        html += `<p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat materi di atas dengan teliti sebelum permainan dimulai!</p>`;
+        container.innerHTML = html;
+      } catch (err) {
+        console.log("Gagal memuat catatan dari Spreadsheet.", err);
+        container.innerHTML = `<div class="text-center text-red-400 py-6">Gagal memuat catatan dari server. Pastikan fungsi <b>getCatatan</b> sudah ditambahkan di Google Apps Script.</div>`;
+      }
+    }
+
     async function initData() {
+      // Muat Catatan, Siswa, dan Soal secara paralel agar cepat
+      loadCatatan();
+
       try {
         let resSiswa = await fetch(API_URL + "?action=getSiswa");
         semuaSiswa = await resSiswa.json();
@@ -317,44 +337,46 @@
       modal.classList.add("hidden");
     }
 
-    // FUNGSI HELPER EXPORT PDF YANG BERSIH & TERBACA JELAS DI KERTAS PUTIH
-    function prosesDownloadPDF(elementId, namaFile) {
-      if (typeof html2pdf === 'undefined') {
-        alert("Library PDF masih dimuat atau gagal terhubung ke internet. Silakan muat ulang halaman.");
+    // FUNGSI DOWNLOAD GAMBAR JPG (BERSIH, LENGKAP TANPA TERPOTONG SCROLL)
+    function prosesDownloadJPG(elementId, namaFile) {
+      if (typeof html2canvas === 'undefined') {
+        alert("Library gambar masih dimuat. Silakan coba beberapa saat lagi.");
         return;
       }
 
       const originalEl = document.getElementById(elementId);
-      // Kloning elemen agar tampilan layar tidak berubah saat diubah ke mode cetak (putih-hitam)
       const clone = originalEl.cloneNode(true);
       
-      // Hapus batasan scroll agar seluruh isi tabel tercetak tidak terpotong
+      // Atur agar seluruh tabel tampil penuh (tidak terpotong scroll) dan rapi untuk disimpan sebagai gambar
       clone.classList.remove("max-h-[60vh]", "overflow-y-auto", "bg-slate-800", "border-slate-700", "shadow-2xl");
-      clone.style.backgroundColor = "#ffffff";
-      clone.style.color = "#000000";
-      clone.style.padding = "20px";
+      clone.style.position = "fixed";
+      clone.style.left = "-9999px";
+      clone.style.top = "0";
+      clone.style.width = "900px";
       clone.style.maxHeight = "none";
       clone.style.overflow = "visible";
+      clone.style.backgroundColor = "#ffffff";
+      clone.style.color = "#0f172a";
+      clone.style.padding = "28px";
 
-      // Tampilkan judul laporan khusus PDF
-      const titleEl = clone.querySelector(".pdf-title");
+      const titleEl = clone.querySelector(".jpg-title");
       if (titleEl) {
         titleEl.classList.remove("hidden");
-        titleEl.style.color = "#000000";
+        titleEl.style.color = "#0f172a";
       }
 
-      // Ubah warna header & baris tabel agar rapi untuk dicetak
       const theadTr = clone.querySelector("thead tr");
       if (theadTr) {
-        theadTr.classList.remove("bg-slate-800", "text-yellow-400", "border-slate-600");
-        theadTr.style.backgroundColor = "#f1f5f9";
+        theadTr.classList.remove("bg-slate-800", "text-yellow-400", "border-slate-600", "sticky");
+        theadTr.style.backgroundColor = "#e2e8f0";
         theadTr.style.color = "#0f172a";
         theadTr.style.borderBottom = "2px solid #334155";
       }
 
-      clone.querySelectorAll("tbody tr").forEach(tr => {
+      clone.querySelectorAll("tbody tr").forEach((tr, i) => {
         tr.classList.remove("border-slate-700");
         tr.style.borderBottom = "1px solid #cbd5e1";
+        if (i % 2 === 1) tr.style.backgroundColor = "#f8fafc";
       });
 
       clone.querySelectorAll("td, th").forEach(cell => {
@@ -362,19 +384,27 @@
         cell.style.color = "#0f172a";
       });
 
-      const opt = {
-        margin:       10,
-        filename:     namaFile,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+      document.body.appendChild(clone);
 
-      html2pdf().from(clone).set(opt).save();
+      html2canvas(clone, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = namaFile;
+        link.href = canvas.toDataURL("image/jpeg", 0.95);
+        link.click();
+        document.body.removeChild(clone);
+      }).catch(err => {
+        console.error("Gagal membuat JPG:", err);
+        document.body.removeChild(clone);
+        alert("Gagal menyimpan gambar JPG.");
+      });
     }
 
-    function cetakPDFSheet() {
-      prosesDownloadPDF("pdfContentSheet", "Rekap_Nilai_Spreadsheet_SeniRupa.pdf");
+    function cetakJPGSheet() {
+      prosesDownloadJPG("jpgContentSheet", "Rekap_Nilai_Spreadsheet.jpg");
     }
 
     function bukaPersiapanSesi() {
@@ -688,8 +718,8 @@
       });
     }
 
-    function cetakPDF() {
-      prosesDownloadPDF("pdfContent", "Hasil_Peringkat_Balap_Cerdas_SeniRupa.pdf");
+    function cetakJPG() {
+      prosesDownloadJPG("jpgContent", "Hasil_Peringkat_Balap_Cerdas.jpg");
     }
   </script>
 </body>
