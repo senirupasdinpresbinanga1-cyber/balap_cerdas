@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balap Cerdas - Seni Rupa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.min.js"></script>
+  <!-- PERBAIKAN URL CDN: diubah dari .min.min.js menjadi .min.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
@@ -69,6 +70,7 @@
     <p class="text-slate-400 mb-4 text-sm">Data nilai, soal terjawab, dan timer siswa yang tersimpan di server</p>
     
     <div id="pdfContentSheet" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
+      <h3 class="pdf-title hidden text-xl font-bold text-black mb-4 text-center">REKAPITULASI NILAI - BALAP CERDAS SENI RUPA</h3>
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
@@ -144,6 +146,7 @@
     <p class="text-slate-400 mb-4 text-sm text-center">Peringkat berdasarkan Skor Tertinggi & Waktu Tercepat</p>
 
     <div id="pdfContent" class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[60vh] overflow-y-auto mb-6 shadow-2xl">
+      <h3 class="pdf-title hidden text-xl font-bold text-black mb-4 text-center">HASIL PERINGKAT BALAP CERDAS - SENI RUPA</h3>
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-slate-600 text-yellow-400 sticky top-0 bg-slate-800">
@@ -314,16 +317,64 @@
       modal.classList.add("hidden");
     }
 
-    function cetakPDFSheet() {
-      const element = document.getElementById("pdfContentSheet");
+    // FUNGSI HELPER EXPORT PDF YANG BERSIH & TERBACA JELAS DI KERTAS PUTIH
+    function prosesDownloadPDF(elementId, namaFile) {
+      if (typeof html2pdf === 'undefined') {
+        alert("Library PDF masih dimuat atau gagal terhubung ke internet. Silakan muat ulang halaman.");
+        return;
+      }
+
+      const originalEl = document.getElementById(elementId);
+      // Kloning elemen agar tampilan layar tidak berubah saat diubah ke mode cetak (putih-hitam)
+      const clone = originalEl.cloneNode(true);
+      
+      // Hapus batasan scroll agar seluruh isi tabel tercetak tidak terpotong
+      clone.classList.remove("max-h-[60vh]", "overflow-y-auto", "bg-slate-800", "border-slate-700", "shadow-2xl");
+      clone.style.backgroundColor = "#ffffff";
+      clone.style.color = "#000000";
+      clone.style.padding = "20px";
+      clone.style.maxHeight = "none";
+      clone.style.overflow = "visible";
+
+      // Tampilkan judul laporan khusus PDF
+      const titleEl = clone.querySelector(".pdf-title");
+      if (titleEl) {
+        titleEl.classList.remove("hidden");
+        titleEl.style.color = "#000000";
+      }
+
+      // Ubah warna header & baris tabel agar rapi untuk dicetak
+      const theadTr = clone.querySelector("thead tr");
+      if (theadTr) {
+        theadTr.classList.remove("bg-slate-800", "text-yellow-400", "border-slate-600");
+        theadTr.style.backgroundColor = "#f1f5f9";
+        theadTr.style.color = "#0f172a";
+        theadTr.style.borderBottom = "2px solid #334155";
+      }
+
+      clone.querySelectorAll("tbody tr").forEach(tr => {
+        tr.classList.remove("border-slate-700");
+        tr.style.borderBottom = "1px solid #cbd5e1";
+      });
+
+      clone.querySelectorAll("td, th").forEach(cell => {
+        cell.classList.remove("text-cyan-300", "text-slate-400", "text-yellow-400");
+        cell.style.color = "#0f172a";
+      });
+
       const opt = {
         margin:       10,
-        filename:     'Rekap_Nilai_Spreadsheet_SeniRupa.pdf',
+        filename:     namaFile,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
+        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
-      html2pdf().from(element).set(opt).save();
+
+      html2pdf().from(clone).set(opt).save();
+    }
+
+    function cetakPDFSheet() {
+      prosesDownloadPDF("pdfContentSheet", "Rekap_Nilai_Spreadsheet_SeniRupa.pdf");
     }
 
     function bukaPersiapanSesi() {
@@ -638,16 +689,7 @@
     }
 
     function cetakPDF() {
-      const element = document.getElementById("pdfContent");
-      const opt = {
-        margin:       10,
-        filename:     'Hasil_Peringkat_Balap_Cerdas_SeniRupa.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().from(element).set(opt).save();
+      prosesDownloadPDF("pdfContent", "Hasil_Peringkat_Balap_Cerdas_SeniRupa.pdf");
     }
   </script>
 </body>
