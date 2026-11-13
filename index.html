@@ -11,7 +11,6 @@
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
     button { touch-action: manipulation; }
-    /* Scrollbar halus untuk kotak opsi soal jika teks sangat panjang */
     .question-scroll::-webkit-scrollbar { width: 5px; }
     .question-scroll::-webkit-scrollbar-track { background: #1e293b; border-radius: 3px; }
     .question-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
@@ -42,7 +41,6 @@
       </button>
     </div>
     
-    <!-- Kontainer Catatan yang ditarik langsung dari Sheet "Catatan" -->
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl w-full mx-auto space-y-4 text-base leading-relaxed">
       <div class="text-center text-slate-400 py-8 animate-pulse">
         ⏳ Memuat catatan materi dari database Spreadsheet...
@@ -59,7 +57,7 @@
     </div>
   </div>
 
-  <!-- MODAL LIHAT REKAP NILAI (DILENGKAPI TOMBOL CETAK JPG) -->
+  <!-- MODAL LIHAT REKAP NILAI -->
   <div id="modalNilaiSheet" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex-col items-center justify-center p-6 overflow-y-auto">
     <h2 class="text-3xl font-black text-yellow-400 mb-1">📊 REKAPITULASI NILAI SPREADSHEET</h2>
     <p class="text-slate-400 mb-4 text-sm">Data nilai, soal terjawab, dan timer siswa yang tersimpan di server</p>
@@ -107,7 +105,7 @@
   </div>
 
   <!-- CONTAINER UTAMA GAME -->
-  <div id="gameContainer" class="h-full flex flex-col justify-between p-2.5 flex-1 overflow-hidden">
+  <div id="gameContainer" class="h-full flex flex-col justify-between p-3 flex-1 overflow-hidden">
     <!-- Header Atas -->
     <div class="flex justify-between items-center bg-slate-800 px-5 py-2 rounded-xl border border-slate-700 shrink-0">
       <div>
@@ -117,8 +115,8 @@
       <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700 font-bold">Selesai Semua Sesi</button>
     </div>
 
-    <!-- Arena Lintasan (Dibuat Lebih Tipis / Ringkas) -->
-    <div class="relative bg-slate-800 border border-slate-700 rounded-xl my-1.5 flex flex-col justify-around p-2 overflow-hidden shrink-0" style="height: 105px;">
+    <!-- Arena Lintasan -->
+    <div class="relative bg-slate-800 border border-slate-700 rounded-xl my-1.5 flex flex-col justify-around p-2 overflow-hidden shrink-0" style="height: 95px;">
       <div class="absolute inset-0 flex justify-between pointer-events-none px-10">
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
@@ -134,8 +132,8 @@
       <div id="playerTracks" class="relative z-10 space-y-1"></div>
     </div>
 
-    <!-- Grid Soal Pilihan Ganda (Diberikan Ruang Flex-Grow Maksimal agar Tidak Terpotong) -->
-    <div id="questionGrid" class="grid grid-cols-4 gap-2.5 flex-1 overflow-hidden pb-1" style="min-height: 330px;"></div>
+    <!-- Grid Soal Pilihan Ganda (Memanjang penuh ke bawah & opsi A,B,C,D diturunkan rata bawah) -->
+    <div id="questionGrid" class="grid grid-cols-4 gap-3 flex-1 pb-1 overflow-hidden" style="height: calc(100vh - 170px);"></div>
   </div>
 
   <!-- MODAL LEADERBOARD -->
@@ -503,7 +501,7 @@
       pemainAktif.forEach((p, idx) => {
         let leftPercent = (p.langkah / 10) * 90;
         container.innerHTML += `
-          <div class="relative h-5 flex items-center">
+          <div class="relative h-4 flex items-center">
             <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[10px] shadow flex items-center gap-1.5" style="left: ${leftPercent}%;">
               🤖 <span>${p.nama}</span> (${p.langkah}/10)
             </div>
@@ -520,7 +518,7 @@
         let currentSoal = p.soalDipakai[p.soalIndex];
         if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 25) {
           grid.innerHTML += `
-            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center">
+            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center h-full">
               <h3 class="font-bold text-yellow-400 mb-2">${p.nama}</h3>
               <p class="text-green-400 font-bold">SELESAI / FINISH!</p>
             </div>
@@ -528,7 +526,7 @@
           return;
         }
 
-        // Render 4 Opsi (A, B, C, D) lengkap dengan scrollable container agar opsi D tidak terpotong
+        // Render 4 Opsi (A, B, C, D) dengan tata letak flex-col agar opsi A,B,C,D terdorong rapi ke bawah
         let opsiHtml = currentSoal.a.map((opt, oIdx) => `
           <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-xs py-1.5 px-2.5 rounded text-left w-full transition active:bg-cyan-600 shrink-0">
             ${String.fromCharCode(65 + oIdx)}. ${opt || ''}
@@ -536,12 +534,12 @@
         `).join("");
 
         grid.innerHTML += `
-          <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between h-full overflow-hidden">
-            <div class="shrink-0">
-              <div class="text-[11px] font-bold text-cyan-400 mb-0.5">${p.nama} (${p.totalJawab + 1}/25)</div>
-              <p class="text-[11px] font-semibold mb-1 leading-snug line-clamp-3">${currentSoal.q}</p>
+          <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between h-full">
+            <div>
+              <div class="text-[11px] font-bold text-cyan-400 mb-1">${p.nama} (${p.totalJawab + 1}/25)</div>
+              <p class="text-xs font-semibold leading-snug overflow-y-auto question-scroll max-h-[160px] pr-1">${currentSoal.q}</p>
             </div>
-            <div class="question-scroll flex-1 overflow-y-auto space-y-1 pr-1 mt-1">
+            <div class="space-y-1.5 mt-2 shrink-0 pt-2 border-t border-slate-700/60">
               ${opsiHtml}
             </div>
           </div>
