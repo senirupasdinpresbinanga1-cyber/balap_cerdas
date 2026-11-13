@@ -116,7 +116,7 @@
     </div>
 
     <!-- Arena Lintasan -->
-    <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1.5 flex flex-col justify-around px-2.5 py-1.5 overflow-hidden shrink-0" style="height: 95px;">
+    <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1.5 flex flex-col justify-around px-2.5 py-1.5 overflow-hidden shrink-0" style="height: 110px;">
       <!-- Garis Vertikal Kotak-kotak Grid (15 Langkah) -->
       <div class="absolute inset-0 grid grid-cols-15 pointer-events-none px-6 z-0">
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
@@ -124,9 +124,11 @@
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <!-- Tulisan FINISH diposisikan tepat di tengah secara vertikal pada garis finish -->
-        <div class="h-full border-r-2 border-red-500 flex items-center justify-end pr-1 relative">
-          <span class="text-red-500 font-black rotate-90 text-[10px] tracking-widest absolute right-[-8px]">FINISH</span>
+        <!-- Garis finish hanya sepanjang area player (flex flex-col) dan teks FINISH persis di tengah -->
+        <div class="h-full flex items-center justify-end relative">
+          <div class="absolute right-0 top-1 bottom-1 w-[2px] bg-red-500 flex items-center justify-center">
+            <span class="text-red-500 font-black rotate-90 text-[10px] tracking-widest whitespace-nowrap bg-slate-800 px-0.5">FINISH</span>
+          </div>
         </div>
       </div>
       <!-- Wadah Jalur Player -->
@@ -491,13 +493,12 @@
     function renderArena() {
       const container = document.getElementById("playerTracks");
       container.innerHTML = "";
-      // Warna background baju karakter sesuai urutan (Merah, Biru, Hijau, Kuning)
       const warna = ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500"];
 
       pemainAktif.forEach((p, idx) => {
         let leftPercent = (p.langkah / 15) * 90;
         container.innerHTML += `
-          <div class="relative h-5 flex items-center lane-divider">
+          <div class="relative h-6 flex items-center lane-divider">
             <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[10px] shadow flex items-center gap-1.5" style="left: ${leftPercent}%;">
               🏃‍♂️ <span>${p.nama}</span> (${p.langkah}/15)
             </div>
@@ -690,7 +691,7 @@
         if (a.skorAkhir === "Absen") return 1;
         if (b.skorAkhir !== a.skorAkhir) return b.skorAkhir - a.skorAkhir;
         if (b.totalJawab !== a.totalJawab) return b.totalJawab - a.totalJawab;
-        return a.waktuDetik - b.waktuDetik;
+        return a.detikSort - b.detikSort;
       });
 
       const tbody = document.getElementById("leaderboardBody");
