@@ -11,9 +11,6 @@
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
     button { touch-action: manipulation; }
-    .question-scroll::-webkit-scrollbar { width: 5px; }
-    .question-scroll::-webkit-scrollbar-track { background: #1e293b; border-radius: 3px; }
-    .question-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
   </style>
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen flex flex-col">
@@ -22,15 +19,6 @@
   <audio id="bgm" loop preload="auto">
       <source src="mp3.mp3" type="audio/mpeg">
   </audio>
-
-  <!-- OVERLAY FULLSCREEN GUARD -->
-  <div id="fullscreenNotice" class="fixed inset-0 bg-red-900/90 z-50 hidden flex-col items-center justify-center text-center p-6 backdrop-blur-md">
-    <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
-    <p class="text-xl mb-6">Layar harus dalam mode Fullscreen untuk melanjutkan permainan!</p>
-    <button onclick="requestFullScreen()" class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-2xl px-8 py-4 rounded-xl shadow-lg transition">
-      Kembali ke Fullscreen 🖥️
-    </button>
-  </div>
 
   <!-- MODAL CATATAN MATERI (DINAMIS DARI SPREADSHEET) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
@@ -105,19 +93,26 @@
   </div>
 
   <!-- CONTAINER UTAMA GAME -->
-  <div id="gameContainer" class="h-full flex flex-col justify-between p-3 flex-1 overflow-hidden">
-    <!-- Header Atas -->
-    <div class="flex justify-between items-center bg-slate-800 px-5 py-2 rounded-xl border border-slate-700 shrink-0">
+  <div id="gameContainer" class="h-full flex flex-col justify-between p-2 flex-1 overflow-hidden">
+    <!-- Header Atas (Dilengkapi Tombol Full Screen Manual) -->
+    <div class="flex justify-between items-center bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 shrink-0">
       <div>
-        <h2 class="text-base font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
+        <h2 class="text-sm font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
       </div>
-      <div class="text-2xl font-black tracking-wider text-cyan-400" id="timer">05:00</div>
-      <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700 font-bold">Selesai Semua Sesi</button>
+      <div class="text-xl font-black tracking-wider text-cyan-400" id="timer">05:00</div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleFullScreen()" id="fs-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] px-2.5 py-1 rounded font-bold transition flex items-center gap-1">
+          🖥️ Full Screen
+        </button>
+        <button onclick="selesaikanSemuaSesi()" class="bg-red-600 hover:bg-red-700 text-white text-[11px] px-2.5 py-1 rounded font-bold transition">
+          Selesai Semua Sesi
+        </button>
+      </div>
     </div>
 
     <!-- Arena Lintasan -->
-    <div class="relative bg-slate-800 border border-slate-700 rounded-xl my-1.5 flex flex-col justify-around p-2 overflow-hidden shrink-0" style="height: 95px;">
-      <div class="absolute inset-0 flex justify-between pointer-events-none px-10">
+    <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1 flex flex-col justify-around px-2 py-1 overflow-hidden shrink-0" style="height: 65px;">
+      <div class="absolute inset-0 flex justify-between pointer-events-none px-8">
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
@@ -127,13 +122,13 @@
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
-        <div class="h-full border-r-2 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-[10px]">FINISH</span></div>
+        <div class="h-full border-r-2 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-[9px]">FINISH</span></div>
       </div>
-      <div id="playerTracks" class="relative z-10 space-y-1"></div>
+      <div id="playerTracks" class="relative z-10 space-y-0.5"></div>
     </div>
 
-    <!-- Grid Soal Pilihan Ganda (Memanjang penuh ke bawah & opsi A,B,C,D diturunkan rata bawah) -->
-    <div id="questionGrid" class="grid grid-cols-4 gap-3 flex-1 pb-1 overflow-hidden" style="height: calc(100vh - 170px);"></div>
+    <!-- Grid Soal Pilihan Ganda -->
+    <div id="questionGrid" class="grid grid-cols-4 gap-2 flex-1 pb-1 overflow-hidden"></div>
   </div>
 
   <!-- MODAL LEADERBOARD -->
@@ -215,27 +210,23 @@
       } catch(e) {}
     }
 
-    function requestFullScreen() {
-      let doc = document.documentElement;
-      if (doc.requestFullscreen) doc.requestFullscreen();
-      else if (doc.mozRequestFullScreen) doc.mozRequestFullScreen();
-      else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-    }
-
-    document.addEventListener("fullscreenchange", checkFullscreenState);
-    document.addEventListener("webkitfullscreenchange", checkFullscreenState);
-    document.addEventListener("mozfullscreenchange", checkFullscreenState);
-
-    function checkFullscreenState() {
-      if (!isGameRunning) return;
-      const isFull = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
-      const notice = document.getElementById("fullscreenNotice");
-      if (!isFull) {
-        notice.classList.remove("hidden");
-        notice.classList.add("flex");
+    // Fungsi Toggle Fullscreen Manual
+    function toggleFullScreen() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        }
+        document.getElementById('fs-btn').innerHTML = `🗗 Normal`;
       } else {
-        notice.classList.remove("flex");
-        notice.classList.add("hidden");
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        document.getElementById('fs-btn').innerHTML = `🖥️ Full Screen`;
       }
     }
 
@@ -471,7 +462,6 @@
       }
 
       isGameRunning = true;
-      requestFullScreen();
 
       document.getElementById("persiapanModal").classList.remove("flex");
       document.getElementById("persiapanModal").classList.add("hidden");
@@ -501,8 +491,8 @@
       pemainAktif.forEach((p, idx) => {
         let leftPercent = (p.langkah / 10) * 90;
         container.innerHTML += `
-          <div class="relative h-4 flex items-center">
-            <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[10px] shadow flex items-center gap-1.5" style="left: ${leftPercent}%;">
+          <div class="relative h-3.5 flex items-center">
+            <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[9px] shadow flex items-center gap-1" style="left: ${leftPercent}%;">
               🤖 <span>${p.nama}</span> (${p.langkah}/10)
             </div>
           </div>
@@ -526,20 +516,19 @@
           return;
         }
 
-        // Render 4 Opsi (A, B, C, D) dengan tata letak flex-col agar opsi A,B,C,D terdorong rapi ke bawah
         let opsiHtml = currentSoal.a.map((opt, oIdx) => `
-          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-xs py-1.5 px-2.5 rounded text-left w-full transition active:bg-cyan-600 shrink-0">
+          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-[11px] py-1.5 px-2 rounded text-left w-full transition active:bg-cyan-600 shrink-0">
             ${String.fromCharCode(65 + oIdx)}. ${opt || ''}
           </button>
         `).join("");
 
         grid.innerHTML += `
-          <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between h-full">
+          <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between h-full">
             <div>
-              <div class="text-[11px] font-bold text-cyan-400 mb-1">${p.nama} (${p.totalJawab + 1}/25)</div>
-              <p class="text-xs font-semibold leading-snug overflow-y-auto question-scroll max-h-[160px] pr-1">${currentSoal.q}</p>
+              <div class="text-[10px] font-bold text-cyan-400 mb-0.5">${p.nama} (${p.totalJawab + 1}/25)</div>
+              <p class="text-[11px] font-medium leading-tight">${currentSoal.q}</p>
             </div>
-            <div class="space-y-1.5 mt-2 shrink-0 pt-2 border-t border-slate-700/60">
+            <div class="space-y-1 mt-2 shrink-0 pt-1.5 border-t border-slate-700/60">
               ${opsiHtml}
             </div>
           </div>
