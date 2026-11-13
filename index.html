@@ -15,6 +15,11 @@
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
 
+  <!-- AUDIO BACKSOUND GITHUB -->
+  <audio id="bgm" loop preload="auto">
+      <source src="https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/mp3.mp3" type="audio/mpeg">
+  </audio>
+
   <!-- OVERLAY FULLSCREEN GUARD -->
   <div id="fullscreenNotice" class="fixed inset-0 bg-red-900/90 z-50 hidden flex-col items-center justify-center text-center p-6 backdrop-blur-md">
     <h1 class="text-4xl font-extrabold text-white mb-4">⚠️ PERINGATAN</h1>
@@ -172,7 +177,7 @@
     let isGameRunning = false;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let bgmInterval = null;
+    const bgm = document.getElementById('bgm');
 
     function playSound(freq, duration) {
       try {
@@ -192,31 +197,17 @@
     }
 
     function startBGM() {
-      stopBGM();
-      const melodi = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-      bgmInterval = setInterval(() => {
-        if (!isGameRunning) return;
-        try {
-          let note = melodi[Math.floor(Math.random() * melodi.length)];
-          let osc = audioCtx.createOscillator();
-          let gain = audioCtx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.value = note;
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.3);
-        } catch(e) {}
-      }, 400);
+      try {
+        bgm.currentTime = 0;
+        bgm.play().catch(e => console.log("Audio autoplay dicegah browser:", e));
+      } catch(e) {}
     }
 
     function stopBGM() {
-      if (bgmInterval) {
-        clearInterval(bgmInterval);
-        bgmInterval = null;
-      }
+      try {
+        bgm.pause();
+        bgm.currentTime = 0;
+      } catch(e) {}
     }
 
     function requestFullScreen() {
@@ -275,7 +266,6 @@
     }
 
     async function initData() {
-      // Muat Catatan, Siswa, dan Soal secara paralel agar cepat
       loadCatatan();
 
       try {
@@ -337,7 +327,6 @@
       modal.classList.add("hidden");
     }
 
-    // FUNGSI DOWNLOAD GAMBAR JPG (BERSIH, LENGKAP TANPA TERPOTONG SCROLL)
     function prosesDownloadJPG(elementId, namaFile) {
       if (typeof html2canvas === 'undefined') {
         alert("Library gambar masih dimuat. Silakan coba beberapa saat lagi.");
@@ -347,7 +336,6 @@
       const originalEl = document.getElementById(elementId);
       const clone = originalEl.cloneNode(true);
       
-      // Atur agar seluruh tabel tampil penuh (tidak terpotong scroll) dan rapi untuk disimpan sebagai gambar
       clone.classList.remove("max-h-[60vh]", "overflow-y-auto", "bg-slate-800", "border-slate-700", "shadow-2xl");
       clone.style.position = "fixed";
       clone.style.left = "-9999px";
