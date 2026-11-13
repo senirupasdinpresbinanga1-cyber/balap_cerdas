@@ -11,6 +11,10 @@
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
     button { touch-action: manipulation; }
+    /* Scrollbar halus khusus teks panjang */
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #1e293b; border-radius: 2px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
   </style>
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen flex flex-col">
@@ -94,7 +98,7 @@
 
   <!-- CONTAINER UTAMA GAME -->
   <div id="gameContainer" class="h-full flex flex-col justify-between p-2 flex-1 overflow-hidden">
-    <!-- Header Atas (Dilengkapi Tombol Full Screen Manual) -->
+    <!-- Header Atas -->
     <div class="flex justify-between items-center bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 shrink-0">
       <div>
         <h2 class="text-sm font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
@@ -110,24 +114,21 @@
       </div>
     </div>
 
-    <!-- Arena Lintasan -->
+    <!-- Arena Lintasan (15 Langkah ke Finish) -->
     <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1 flex flex-col justify-around px-2 py-1 overflow-hidden shrink-0" style="height: 65px;">
-      <div class="absolute inset-0 flex justify-between pointer-events-none px-8">
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="track-line h-full w-1/10"></div>
-        <div class="h-full border-r-2 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-[9px]">FINISH</span></div>
+      <div class="absolute inset-0 grid grid-cols-15 pointer-events-none px-6">
+        <!-- 14 Garis Pembatas Grid -->
+        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+        <div class="track-line h-full"></div><div class="track-line h-full"></div>
+        <div class="h-full border-r-2 border-red-500 flex items-center justify-end pr-1"><span class="text-red-500 font-bold rotate-90 text-[8px]">FINISH</span></div>
       </div>
       <div id="playerTracks" class="relative z-10 space-y-0.5"></div>
     </div>
 
-    <!-- Grid Soal Pilihan Ganda -->
+    <!-- Grid Soal Pilihan Ganda (Maksimal 15 Soal) -->
     <div id="questionGrid" class="grid grid-cols-4 gap-2 flex-1 pb-1 overflow-hidden"></div>
   </div>
 
@@ -210,7 +211,6 @@
       } catch(e) {}
     }
 
-    // Fungsi Toggle Fullscreen Manual
     function toggleFullScreen() {
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         const elem = document.documentElement;
@@ -270,7 +270,8 @@
         let resSoal = await fetch(API_URL + "?action=getSoal");
         let rawSoal = await resSoal.json();
         
-        bankSoal = rawSoal.slice(0, 25);
+        // Maksimal 15 soal diambil dari database
+        bankSoal = rawSoal.slice(0, 15);
       } catch (err) {
         console.log("Gagal memuat data dari Spreadsheet.", err);
       }
@@ -489,11 +490,12 @@
       const warna = ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500"];
 
       pemainAktif.forEach((p, idx) => {
-        let leftPercent = (p.langkah / 10) * 90;
+        // Target finish 15 langkah
+        let leftPercent = (p.langkah / 15) * 90;
         container.innerHTML += `
           <div class="relative h-3.5 flex items-center">
             <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[9px] shadow flex items-center gap-1" style="left: ${leftPercent}%;">
-              🤖 <span>${p.nama}</span> (${p.langkah}/10)
+              🤖 <span>${p.nama}</span> (${p.langkah}/15)
             </div>
           </div>
         `;
@@ -506,7 +508,8 @@
 
       pemainAktif.forEach((p, idx) => {
         let currentSoal = p.soalDipakai[p.soalIndex];
-        if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 25) {
+        // Batas maksimal menjawab 15 soal atau mencapai 15 langkah
+        if (!currentSoal || p.langkah >= 15 || p.totalJawab >= 15) {
           grid.innerHTML += `
             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center h-full">
               <h3 class="font-bold text-yellow-400 mb-2">${p.nama}</h3>
@@ -522,11 +525,23 @@
           </button>
         `).join("");
 
+        // Memisahkan Teks (putih) dengan bagian "Soal :" (kuning) serta mempertahankan Enter asli dari spreadsheet
+        let teksAsli = currentSoal.q || "";
+        let formattedQ = teksAsli;
+        let indexSoalKata = teksAsli.indexOf("Soal :");
+        if (indexSoalKata !== -1) {
+          let bagianTeks = teksAsli.substring(0, indexSoalKata);
+          let bagianSoal = teksAsli.substring(indexSoalKata);
+          formattedQ = `<span class="text-white">${bagianTeks}</span><span class="text-yellow-400 font-bold">${bagianSoal}</span>`;
+        } else {
+          formattedQ = `<span class="text-white">${teksAsli}</span>`;
+        }
+
         grid.innerHTML += `
           <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between h-full">
             <div>
-              <div class="text-[10px] font-bold text-cyan-400 mb-0.5">${p.nama} (${p.totalJawab + 1}/25)</div>
-              <p class="text-[11px] font-medium leading-tight">${currentSoal.q}</p>
+              <div class="text-[10px] font-bold text-cyan-400 mb-0.5">${p.nama} (${p.totalJawab + 1}/15)</div>
+              <div class="text-[11px] font-medium leading-tight whitespace-pre-line custom-scroll overflow-y-auto max-h-[145px] pr-1">${formattedQ}</div>
             </div>
             <div class="space-y-1 mt-2 shrink-0 pt-1.5 border-t border-slate-700/60">
               ${opsiHtml}
@@ -563,7 +578,8 @@
       renderArena();
       renderSoal();
 
-      let semuaSelesai = pemainAktif.every(player => player.langkah >= 10 || player.totalJawab >= 25);
+      // Selesai jika mencapai 15 langkah atau sudah menjawab 15 soal
+      let semuaSelesai = pemainAktif.every(player => player.langkah >= 15 || player.totalJawab >= 15);
       if (semuaSelesai) {
         akhiriSesi();
       }
@@ -611,13 +627,9 @@
         let skor = 0;
         let tampilSkor = "";
 
-        if (p.totalJawab >= 25 && p.benar < 10) {
-          skor = 0;
-          tampilSkor = "0 (Gagal)";
-        } else if (p.benar > 10) {
-          let bonus = p.benar - 10;
+        if (p.totalJawab >= 15 && p.benar < 15) {
           skor = p.benar;
-          tampilSkor = `10 + ${bonus}`;
+          tampilSkor = `${p.benar}`;
         } else {
           skor = p.benar;
           tampilSkor = `${p.benar}`;
