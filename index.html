@@ -105,11 +105,7 @@
         <h2 class="text-sm font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
       </div>
       <div class="text-xl font-black tracking-wider text-cyan-400" id="timer">08:00</div>
-      <div class="flex items-center gap-2">
-        <button onclick="toggleFullScreen()" id="fs-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] px-2.5 py-1 rounded font-bold transition flex items-center gap-1">
-          🖥️ Full Layar
-        </button>
-      </div>
+      <div></div>
     </div>
 
     <!-- Arena Lintasan -->
@@ -213,25 +209,6 @@
         bgm.pause();
         bgm.currentTime = 0;
       } catch(e) {}
-    }
-
-    function toggleFullScreen() {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen().catch(() => {});
-        } else if (elem.webkitRequestFullscreen) {
-          elem.webkitRequestFullscreen();
-        }
-        document.getElementById('fs-btn').innerHTML = `🗗 Normal`;
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {});
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        }
-        document.getElementById('fs-btn').innerHTML = `🖥️ Full Layar`;
-      }
     }
 
     async function loadCatatan() {
