@@ -8,10 +8,15 @@
   <!-- Library html2canvas untuk Cetak / Download JPG -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    .track-line { border-right: 2px dashed rgba(255,255,255,0.3); }
+    .track-line { border-right: 2px dashed rgba(255,255,255,0.2); }
     .lane-divider { border-bottom: 1px dashed rgba(255,255,255,0.2); }
     .character { transition: all 0.3s ease-in-out; }
     button { touch-action: manipulation; }
+    /* Motif Papan Catur Garis Finish */
+    .finish-checkered {
+      background-image: repeating-conic-gradient(#ffffff 0% 25%, #0f172a 0% 50%);
+      background-size: 8px 8px;
+    }
     /* Scrollbar halus khusus teks panjang */
     .custom-scroll::-webkit-scrollbar { width: 4px; }
     .custom-scroll::-webkit-scrollbar-track { background: #1e293b; border-radius: 2px; }
@@ -106,7 +111,10 @@
       </div>
       <div class="text-xl font-black tracking-wider text-cyan-400" id="timer">08:00</div>
       <div class="flex items-center gap-2">
-        <button onclick="toggleFullScreen()" id="fs-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] px-2.5 py-1 rounded font-bold transition flex items-center gap-1">
+        <button onclick="triggerResetGame()" class="bg-red-600 hover:bg-red-500 text-white text-[11px] px-2.5 py-1 rounded font-bold transition flex items-center gap-1 shadow">
+          🔄 Reset Game
+        </button>
+        <button onclick="toggleFullScreen()" id="fs-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] px-2.5 py-1 rounded font-bold transition flex items-center gap-1 shadow">
           🖥️ Full Layar
         </button>
       </div>
@@ -114,20 +122,27 @@
 
     <!-- Arena Lintasan -->
     <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1.5 flex flex-col justify-around px-2.5 py-1.5 overflow-hidden shrink-0" style="height: 125px;">
-      <!-- Garis Vertikal Kotak-kotak Grid (15 Langkah) -->
-      <div class="absolute inset-0 grid grid-cols-15 pointer-events-none px-6 z-0">
-        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <!-- Garis finish dengan tulisan FINISH yang posisinya aman di dalam arena -->
-        <div class="h-full flex items-center justify-end relative">
-          <div class="absolute right-0 top-2 bottom-2 w-[2px] bg-red-500 flex items-center justify-center">
-            <span class="text-red-500 font-black rotate-90 text-[9px] tracking-widest whitespace-nowrap bg-slate-800 px-1 -mt-1">FINISH</span>
+      <!-- Garis Vertikal Langkah (1 - 14) -->
+      <div class="absolute inset-y-0 left-2.5 right-2.5 pointer-events-none z-0">
+        <div class="h-full w-[90%] grid grid-cols-15">
+          <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+          <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+          <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+          <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
+          <div class="track-line h-full"></div><div class="track-line h-full"></div>
+        </div>
+
+        <!-- GARIS FINISH BARU (Checkered Flag + Badge) -->
+        <div class="absolute top-0 bottom-0 flex items-center" style="left: 90%;">
+          <!-- Tiang / Pita Finish Kotak-Kotak -->
+          <div class="w-2.5 h-full finish-checkered border-x border-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.6)]"></div>
+          <!-- Label FINISH di kanan garis -->
+          <div class="ml-1.5 bg-red-600/90 border border-red-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow tracking-wider flex items-center gap-0.5 whitespace-nowrap">
+            🏁 FINISH
           </div>
         </div>
       </div>
+
       <!-- Wadah Jalur Player -->
       <div id="playerTracks" class="relative z-10 flex flex-col justify-around h-full"></div>
     </div>
@@ -216,11 +231,9 @@
     }
 
     function toggleFullScreen() {
-      const body = document.body;
       const fsBtn = document.getElementById('fs-btn');
       
       if (!document.fullscreenElement) {
-        // Masuk Fullscreen bersih tanpa notif Escape browser
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen().catch(() => {});
         }
@@ -493,9 +506,10 @@
 
       pemainAktif.forEach((p, idx) => {
         let leftPercent = (p.langkah / 15) * 90;
+        let badgeFinish = p.langkah >= 15 ? "ring-2 ring-yellow-300 scale-105" : "";
         container.innerHTML += `
           <div class="relative h-6 flex items-center lane-divider">
-            <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[10px] shadow flex items-center gap-1.5" style="left: ${leftPercent}%;">
+            <div class="character absolute ${warna[idx]} ${badgeFinish} text-white px-2 py-0.5 rounded-full font-bold text-[10px] shadow flex items-center gap-1.5 -translate-x-1" style="left: ${leftPercent}%;">
               🏃‍♂️ <span>${p.nama}</span> (${p.langkah}/15)
             </div>
           </div>
@@ -542,7 +556,7 @@
           <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between h-full">
             <div>
               <div class="text-[10px] font-bold text-cyan-400 mb-0.5">${p.nama} (Jawab: ${p.totalJawab + 1}/25)</div>
-              <div class="text-[11px] font-medium leading-tight whitespace-pre-line custom-scroll overflow-y-auto max-h-[157] pr-1">${formattedQ}</div>
+              <div class="text-[11px] font-medium leading-tight whitespace-pre-line custom-scroll overflow-y-auto max-h-[157px] pr-1">${formattedQ}</div>
             </div>
             <div class="space-y-1 mt-2 shrink-0 pt-1.5 border-t border-slate-700/60">
               ${opsiHtml}
@@ -689,7 +703,7 @@
         if (a.skorAkhir === "Absen") return 1;
         if (b.skorAkhir !== a.skorAkhir) return b.skorAkhir - a.skorAkhir;
         if (b.totalJawab !== a.totalJawab) return b.totalJawab - a.totalJawab;
-        return a.detikSort - b.detikSort;
+        return a.waktuDetik - b.waktuDetik;
       });
 
       const tbody = document.getElementById("leaderboardBody");
