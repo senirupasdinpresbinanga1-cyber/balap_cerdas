@@ -17,7 +17,7 @@
 
   <!-- AUDIO BACKSOUND GITHUB -->
   <audio id="bgm" loop preload="auto">
-      <source src="https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/mp3.mp3" type="audio/mpeg">
+      <source src="mp3.mp3" type="audio/mpeg">
   </audio>
 
   <!-- OVERLAY FULLSCREEN GUARD -->
@@ -128,7 +128,8 @@
       <div id="playerTracks" class="relative z-10 space-y-4"></div>
     </div>
 
-    <div id="questionGrid" class="grid grid-cols-4 gap-3 h-64"></div>
+    <!-- Grid Soal disesuaikan agar muat 4 Pilihan (A, B, C, D) dengan rapi -->
+    <div id="questionGrid" class="grid grid-cols-4 gap-3 h-72"></div>
   </div>
 
   <!-- MODAL LEADERBOARD -->
@@ -234,7 +235,6 @@
       }
     }
 
-    // FUNGSI MEMUAT CATATAN DARI SHEET "Catatan"
     async function loadCatatan() {
       const container = document.getElementById("kontenCatatan");
       container.innerHTML = `<div class="text-center text-slate-400 py-8 animate-pulse">⏳ Memuat catatan materi dari database Spreadsheet...</div>`;
@@ -522,17 +522,18 @@
           return;
         }
 
+        // Render 4 Opsi (A, B, C, D)
         let opsiHtml = currentSoal.a.map((opt, oIdx) => `
-          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-sm py-2 px-3 rounded text-left w-full transition active:bg-cyan-600">
-            ${String.fromCharCode(65 + oIdx)}. ${opt}
+          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-xs py-1.5 px-2.5 rounded text-left w-full transition active:bg-cyan-600 truncate">
+            ${String.fromCharCode(65 + oIdx)}. ${opt || ''}
           </button>
         `).join("");
 
         grid.innerHTML += `
-          <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-between">
+          <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between">
             <div>
-              <div class="text-xs font-bold text-cyan-400 mb-1">${p.nama} (Soal ${p.totalJawab + 1}/25)</div>
-              <p class="text-xs font-semibold mb-2">${currentSoal.q}</p>
+              <div class="text-[11px] font-bold text-cyan-400 mb-0.5">${p.nama} (${p.totalJawab + 1}/25)</div>
+              <p class="text-[11px] font-semibold mb-1.5 line-clamp-2">${currentSoal.q}</p>
             </div>
             <div class="space-y-1">
               ${opsiHtml}
