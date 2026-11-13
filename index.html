@@ -46,7 +46,7 @@
     </div>
 
     <div class="flex justify-center gap-4 mt-6">
-      <button onclick="bukaPersiapanSesi()" class="bg-green-500 hover:bg-green-600 text-white font-extrabold text-xl px-8 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
+      <button id="btnLanjutSesi" onclick="bukaPersiapanSesi()" class="hidden bg-green-500 hover:bg-green-600 text-white font-extrabold text-xl px-8 py-4 rounded-2xl shadow-xl transition transform hover:scale-105">
         LANJUT KE PERSIAPAN SESI 🚀
       </button>
       <button onclick="initData()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-xl">
@@ -195,6 +195,7 @@
     let hasilSemuaSesi = [];
     let kelompokSementara = [];
     let isGameRunning = false;
+    let jedaTombolTimeout = null;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const bgm = document.getElementById('bgm');
@@ -246,7 +247,21 @@
       }
     }
 
+    function jadwalkanMunculTombolLanjut() {
+      const btnLanjut = document.getElementById("btnLanjutSesi");
+      if (!btnLanjut) return;
+      btnLanjut.classList.add("hidden");
+      clearTimeout(jedaTombolTimeout);
+      jedaTombolTimeout = setTimeout(() => {
+        btnLanjut.classList.remove("hidden");
+      }, 5000);
+    }
+
     async function loadCatatan() {
+      const btnLanjut = document.getElementById("btnLanjutSesi");
+      if (btnLanjut) btnLanjut.classList.add("hidden");
+      clearTimeout(jedaTombolTimeout);
+
       const container = document.getElementById("kontenCatatan");
       container.innerHTML = `<div class="text-center text-slate-400 py-8 animate-pulse">⏳ Memuat catatan materi dari database Spreadsheet...</div>`;
       
@@ -256,6 +271,7 @@
 
         if (!dataCatatan || dataCatatan.length === 0) {
           container.innerHTML = `<div class="text-center text-yellow-400 py-6">Belum ada data catatan di Sheet 'Catatan'.</div>`;
+          jadwalkanMunculTombolLanjut();
           return;
         }
 
@@ -270,9 +286,11 @@
         });
         html += `<p class="text-yellow-300 font-semibold italic text-center mt-6">Silakan catat materi di atas dengan teliti sebelum permainan dimulai!</p>`;
         container.innerHTML = html;
+        jadwalkanMunculTombolLanjut();
       } catch (err) {
         console.log("Gagal memuat catatan dari Spreadsheet.", err);
         container.innerHTML = `<div class="text-center text-red-400 py-6">Gagal memuat catatan dari server. Pastikan fungsi <b>getCatatan</b> sudah ditambahkan di Google Apps Script.</div>`;
+        jadwalkanMunculTombolLanjut();
       }
     }
 
