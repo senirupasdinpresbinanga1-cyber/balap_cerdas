@@ -121,10 +121,10 @@
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <!-- Garis finish sejajar dengan pemain atas-bawah -->
-        <div class="h-full flex items-start justify-end relative">
-          <div class="absolute right-0 top-0 bottom-0 w-[2px] bg-red-500 flex items-start justify-center">
-            <span class="text-red-500 font-black rotate-90 text-[10px] tracking-widest whitespace-nowrap bg-slate-800 px-0.5 mt-1">FINISH</span>
+        <!-- Garis finish dengan tulisan FINISH pas di tengah secara vertikal dan masuk seluruh hurufnya -->
+        <div class="h-full flex items-center justify-end relative">
+          <div class="absolute right-0 top-1 bottom-1 w-[2px] bg-red-500 flex items-center justify-center">
+            <span class="text-red-500 font-black rotate-90 text-[10px] tracking-widest whitespace-nowrap bg-slate-800 px-1">FINISH</span>
           </div>
         </div>
       </div>
@@ -510,7 +510,6 @@
 
       pemainAktif.forEach((p, idx) => {
         let currentSoal = p.soalDipakai[p.soalIndex];
-        // Batas maksimum menjawab 25 kali, atau sudah sampai 15 langkah (finish)
         if (!currentSoal || p.langkah >= 15 || p.totalJawab >= 25) {
           let statusSelesaiTxt = p.langkah >= 15 ? "SELESAI / FINISH!" : "KAMU GUGUR (Max 25 Jawab)";
           let statusWarna = p.langkah >= 15 ? "text-green-400" : "text-red-400";
@@ -577,7 +576,6 @@
         playSound(200, 0.2);
       }
 
-      // Looping 15 soal terus menerus jika belum finish atau belum 25 kali jawab
       p.soalIndex = (p.soalIndex + 1) % p.soalDipakai.length;
       renderArena();
       renderSoal();
@@ -631,7 +629,7 @@
         let tampilSkor = "";
 
         if (p.langkah < 15 && p.totalJawab >= 25) {
-          skor = 6; // Nilai 60% disimpan di database sebagai "6"
+          skor = 6; 
           tampilSkor = "Kamu Gugur (Nilai 60%)";
         } else {
           skor = p.benar;
