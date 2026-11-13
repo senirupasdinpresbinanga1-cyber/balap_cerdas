@@ -8,7 +8,8 @@
   <!-- Library html2canvas untuk Cetak / Download JPG -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
+    .track-line { border-right: 2px dashed rgba(255,255,255,0.3); }
+    .lane-divider { border-bottom: 1px dashed rgba(255,255,255,0.2); }
     .character { transition: all 0.3s ease-in-out; }
     button { touch-action: manipulation; }
     /* Scrollbar halus khusus teks panjang */
@@ -114,17 +115,22 @@
       </div>
     </div>
 
-    <!-- Arena Lintasan (Diperluas sedikit menjadi 85px agar nama/karakter & finish kelihatan sangat jelas) -->
-    <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1.5 flex flex-col justify-around px-2.5 py-1.5 overflow-hidden shrink-0" style="height: 85px;">
-      <div class="absolute inset-0 grid grid-cols-15 pointer-events-none px-6">
+    <!-- Arena Lintasan -->
+    <div class="relative bg-slate-800 border border-slate-700 rounded-lg my-1.5 flex flex-col justify-around px-2.5 py-1.5 overflow-hidden shrink-0" style="height: 95px;">
+      <!-- Garis Vertikal Kotak-kotak Grid (15 Langkah) -->
+      <div class="absolute inset-0 grid grid-cols-15 pointer-events-none px-6 z-0">
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div><div class="track-line h-full"></div>
         <div class="track-line h-full"></div><div class="track-line h-full"></div>
-        <div class="h-full border-r-2 border-red-500 flex items-center justify-end pr-1"><span class="text-red-500 font-bold rotate-90 text-[10px]">FINISH</span></div>
+        <!-- Tulisan FINISH diposisikan tepat di tengah secara vertikal pada garis finish -->
+        <div class="h-full border-r-2 border-red-500 flex items-center justify-end pr-1 relative">
+          <span class="text-red-500 font-black rotate-90 text-[10px] tracking-widest absolute right-[-8px]">FINISH</span>
+        </div>
       </div>
-      <div id="playerTracks" class="relative z-10 space-y-1"></div>
+      <!-- Wadah Jalur Player -->
+      <div id="playerTracks" class="relative z-10 flex flex-col justify-around h-full"></div>
     </div>
 
     <!-- Grid Soal Pilihan Ganda -->
@@ -485,14 +491,15 @@
     function renderArena() {
       const container = document.getElementById("playerTracks");
       container.innerHTML = "";
+      // Warna background baju karakter sesuai urutan (Merah, Biru, Hijau, Kuning)
       const warna = ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500"];
 
       pemainAktif.forEach((p, idx) => {
         let leftPercent = (p.langkah / 15) * 90;
         container.innerHTML += `
-          <div class="relative h-4 flex items-center">
+          <div class="relative h-5 flex items-center lane-divider">
             <div class="character absolute ${warna[idx]} text-white px-2 py-0.5 rounded-full font-bold text-[10px] shadow flex items-center gap-1.5" style="left: ${leftPercent}%;">
-              🤖 <span>${p.nama}</span> (${p.langkah}/15)
+              🏃‍♂️ <span>${p.nama}</span> (${p.langkah}/15)
             </div>
           </div>
         `;
