@@ -11,9 +11,13 @@
     .track-line { border-right: 2px dashed rgba(255,255,255,0.4); }
     .character { transition: all 0.3s ease-in-out; }
     button { touch-action: manipulation; }
+    /* Scrollbar khusus untuk kotak opsi soal agar mudah digulir jika teks panjang */
+    .question-scroll::-webkit-scrollbar { width: 6px; }
+    .question-scroll::-webkit-scrollbar-track { background: #1e293b; border-radius: 3px; }
+    .question-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
   </style>
 </head>
-<body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen">
+<body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen flex flex-col">
 
   <!-- AUDIO BACKSOUND GITHUB -->
   <audio id="bgm" loop preload="auto">
@@ -103,16 +107,17 @@
   </div>
 
   <!-- CONTAINER UTAMA GAME -->
-  <div id="gameContainer" class="h-full flex flex-col justify-between p-4">
-    <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
+  <div id="gameContainer" class="h-full flex flex-col justify-between p-3 flex-1 overflow-hidden">
+    <div class="flex justify-between items-center bg-slate-800 px-6 py-2.5 rounded-xl border border-slate-700 shrink-0">
       <div>
-        <h2 class="text-xl font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
+        <h2 class="text-lg font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
       </div>
-      <div class="text-3xl font-black tracking-wider text-cyan-400" id="timer">05:00</div>
-      <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700">Selesai Semua Sesi</button>
+      <div class="text-2xl font-black tracking-wider text-cyan-400" id="timer">05:00</div>
+      <button onclick="selesaikanSemuaSesi()" class="bg-red-600 text-xs px-3 py-1 rounded hover:bg-red-700 font-bold">Selesai Semua Sesi</button>
     </div>
 
-    <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-4 overflow-hidden">
+    <!-- Arena Lintasan -->
+    <div class="relative bg-slate-800 border-2 border-slate-700 rounded-2xl my-2 flex-grow flex flex-col justify-around p-3 overflow-hidden shrink-0" style="min-height: 140px;">
       <div class="absolute inset-0 flex justify-between pointer-events-none px-12">
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
@@ -123,13 +128,13 @@
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
         <div class="track-line h-full w-1/10"></div>
-        <div class="h-full border-r-4 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-sm">FINISH</span></div>
+        <div class="h-full border-r-4 border-red-500 flex items-center"><span class="text-red-500 font-bold rotate-90 text-xs">FINISH</span></div>
       </div>
-      <div id="playerTracks" class="relative z-10 space-y-4"></div>
+      <div id="playerTracks" class="relative z-10 space-y-2"></div>
     </div>
 
-    <!-- Grid Soal disesuaikan agar muat 4 Pilihan (A, B, C, D) dengan rapi -->
-    <div id="questionGrid" class="grid grid-cols-4 gap-3 h-72"></div>
+    <!-- Grid Soal (Diberikan fleksibilitas tinggi dan scrollable agar opsi D selalu muat & kelihatan) -->
+    <div id="questionGrid" class="grid grid-cols-4 gap-3 flex-1 overflow-hidden pb-1" style="min-height: 250px;"></div>
   </div>
 
   <!-- MODAL LEADERBOARD -->
@@ -497,8 +502,8 @@
       pemainAktif.forEach((p, idx) => {
         let leftPercent = (p.langkah / 10) * 90;
         container.innerHTML += `
-          <div class="relative h-12 flex items-center">
-            <div class="character absolute ${warna[idx]} text-white px-3 py-1 rounded-full font-bold shadow-lg flex items-center gap-2" style="left: ${leftPercent}%;">
+          <div class="relative h-10 flex items-center">
+            <div class="character absolute ${warna[idx]} text-white px-3 py-0.5 rounded-full font-bold text-xs shadow-lg flex items-center gap-2" style="left: ${leftPercent}%;">
               🤖 <span>${p.nama}</span> (${p.langkah}/10)
             </div>
           </div>
@@ -514,7 +519,7 @@
         let currentSoal = p.soalDipakai[p.soalIndex];
         if (!currentSoal || p.langkah >= 10 || p.totalJawab >= 25) {
           grid.innerHTML += `
-            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center">
+            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col items-center justify-center text-center">
               <h3 class="font-bold text-yellow-400 mb-2">${p.nama}</h3>
               <p class="text-green-400 font-bold">SELESAI / FINISH!</p>
             </div>
@@ -522,20 +527,20 @@
           return;
         }
 
-        // Render 4 Opsi (A, B, C, D)
+        // Render 4 Opsi (A, B, C, D) dengan kontainer internal scroll agar opsi D tidak terpotong layar bawah
         let opsiHtml = currentSoal.a.map((opt, oIdx) => `
-          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-xs py-1.5 px-2.5 rounded text-left w-full transition active:bg-cyan-600 truncate">
+          <button data-player="${idx}" data-opt="${oIdx}" class="option-btn bg-slate-700 hover:bg-slate-600 text-xs py-1.5 px-2.5 rounded text-left w-full transition active:bg-cyan-600 shrink-0">
             ${String.fromCharCode(65 + oIdx)}. ${opt || ''}
           </button>
         `).join("");
 
         grid.innerHTML += `
-          <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between">
-            <div>
+          <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 flex flex-col justify-between h-full overflow-hidden">
+            <div class="shrink-0">
               <div class="text-[11px] font-bold text-cyan-400 mb-0.5">${p.nama} (${p.totalJawab + 1}/25)</div>
-              <p class="text-[11px] font-semibold mb-1.5 line-clamp-2">${currentSoal.q}</p>
+              <p class="text-[11px] font-semibold mb-1 leading-snug line-clamp-2">${currentSoal.q}</p>
             </div>
-            <div class="space-y-1">
+            <div class="question-scroll flex-1 overflow-y-auto space-y-1 pr-1 mt-1">
               ${opsiHtml}
             </div>
           </div>
