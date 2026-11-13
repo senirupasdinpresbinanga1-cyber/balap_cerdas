@@ -105,7 +105,11 @@
         <h2 class="text-sm font-bold text-yellow-400" id="infoSesiHeader">Sesi 1</h2>
       </div>
       <div class="text-xl font-black tracking-wider text-cyan-400" id="timer">08:00</div>
-      <div></div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleFullScreen()" id="fs-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] px-2.5 py-1 rounded font-bold transition flex items-center gap-1">
+          🖥️ Full Layar
+        </button>
+      </div>
     </div>
 
     <!-- Arena Lintasan -->
@@ -209,6 +213,24 @@
         bgm.pause();
         bgm.currentTime = 0;
       } catch(e) {}
+    }
+
+    function toggleFullScreen() {
+      const body = document.body;
+      const fsBtn = document.getElementById('fs-btn');
+      
+      if (!document.fullscreenElement) {
+        // Masuk Fullscreen bersih tanpa notif Escape browser
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+        fsBtn.innerHTML = `🗗 Normal`;
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+        fsBtn.innerHTML = `🖥️ Full Layar`;
+      }
     }
 
     async function loadCatatan() {
