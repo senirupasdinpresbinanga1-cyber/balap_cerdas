@@ -35,13 +35,36 @@
       <source src="sound.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- MODAL LOGIN (SISTEM KEAMANAN) -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900 z-50 hidden flex-col items-center justify-center p-6">
+    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 max-w-md w-full text-center space-y-6 shadow-2xl">
+      <h2 class="text-3xl font-black text-yellow-400">🔒 LOGIN BALAP CERDAS</h2>
+      <p class="text-slate-300 text-sm">Masukkan password untuk mulai menggunakan aplikasi</p>
+      
+      <div class="space-y-4">
+        <input type="password" id="passwordInput" placeholder="Masukkan Password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-center text-lg focus:outline-none focus:border-yellow-400 transition" onkeydown="if(event.key === 'Enter') prosesLogin()">
+        <button onclick="prosesLogin()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-black text-xl py-3 rounded-xl shadow-lg transition transform hover:scale-105">
+          MASUK 🚀
+        </button>
+      </div>
+      <p id="loginError" class="text-red-400 text-xs hidden font-bold">Password salah! Silakan coba lagi.</p>
+    </div>
+  </div>
+
   <!-- MODAL CATATAN MATERI (DINAMIS DARI SPREADSHEET) -->
   <div id="materiModal" class="fixed inset-0 bg-slate-900 z-40 flex flex-col p-8 overflow-y-auto">
-    <div class="flex justify-between items-center max-w-4xl mx-auto w-full mb-4">
-      <h1 class="text-3xl font-bold text-yellow-400 text-center flex-grow">BALAP CERDAS</h1>
-      <button onclick="bukaModalNilaiSheet()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow transition">
-        📊 Lihat Rekap Nilai
-      </button>
+    <div class="grid grid-cols-3 items-center max-w-4xl mx-auto w-full mb-4">
+      <div class="flex items-center">
+        <button onclick="logoutApp()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded-xl text-sm shadow transition flex items-center gap-1">
+          🚪 Logout
+        </button>
+      </div>
+      <h1 class="text-3xl font-bold text-yellow-400 text-center">BALAP CERDAS</h1>
+      <div class="flex justify-end">
+        <button onclick="bukaModalNilaiSheet()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow transition">
+          📊 Lihat Rekap Nilai
+        </button>
+      </div>
     </div>
     
     <div id="kontenCatatan" class="bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-4xl w-full mx-auto space-y-4 text-base leading-relaxed">
@@ -295,6 +318,43 @@
       }, 3000);
     }
 
+    // SISTEM LOGIN & LOGOUT
+    function checkLogin() {
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      const loginModal = document.getElementById('loginModal');
+      if (isLoggedIn === 'true') {
+        loginModal.classList.add('hidden');
+        loginModal.classList.remove('flex');
+        initData();
+      } else {
+        loginModal.classList.remove('hidden');
+        loginModal.classList.add('flex');
+      }
+    }
+
+    function prosesLogin() {
+      const pass = document.getElementById('passwordInput').value;
+      const errorEl = document.getElementById('loginError');
+      if (pass === 'hana') {
+        localStorage.setItem('isLoggedIn', 'true');
+        document.getElementById('loginModal').classList.remove('flex');
+        document.getElementById('loginModal').classList.add('hidden');
+        document.getElementById('passwordInput').value = '';
+        errorEl.classList.add('hidden');
+        initData();
+      } else {
+        errorEl.classList.remove('hidden');
+        playSound(200, 0.2);
+      }
+    }
+
+    function logoutApp() {
+      if (confirm("Apakah Anda yakin ingin logout?")) {
+        localStorage.removeItem('isLoggedIn');
+        location.reload();
+      }
+    }
+
     async function loadCatatan() {
       const btnLanjut = document.getElementById("btnLanjutSesi");
       if (btnLanjut) btnLanjut.classList.add("hidden");
@@ -353,7 +413,9 @@
         siswaAntrean = [...semuaSiswa].sort(() => Math.random() - 0.5);
       }
     }
-    initData();
+
+    // Jalankan pemeriksaan login saat halaman dimuat
+    checkLogin();
 
     async function bukaModalNilaiSheet() {
       const modal = document.getElementById("modalNilaiSheet");
@@ -737,10 +799,8 @@
     }
 
     function tampilkanPopUpHasilSesi(dataSesi) {
-      // Bunyikan sound.mp3 (sekali putar, tanpa loop) saat pop-up hasil muncul
       playPopupSound();
 
-      // Urutkan peringkat sesi ini: Yang tidak gugur di atas -> Jumlah Benar Tertinggi -> Waktu Tercepat
       let rankingSesi = [...dataSesi].sort((a, b) => {
         if (a.isGugur !== b.isGugur) return a.isGugur ? 1 : -1;
         if (b.benar !== a.benar) return b.benar - a.benar;
