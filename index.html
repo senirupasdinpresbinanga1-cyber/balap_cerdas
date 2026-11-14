@@ -212,7 +212,7 @@
     let pemainAktif = [];
     let sesiKe = 1;
     let timerInterval = null;
-    let waktuDetik = 480; // 8 Menit
+    let waktuDetik = 600; // 10 Menit
     let hasilSemuaSesi = [];
     let kelompokSementara = [];
     let isGameRunning = false;
@@ -342,7 +342,7 @@
         let resSoal = await fetch(API_URL + "?action=getSoal");
         let rawSoal = await resSoal.json();
         
-        bankSoal = rawSoal.slice(0, 15);
+        bankSoal = rawSoal.slice(0, 10);
       } catch (err) {
         console.log("Gagal memuat data dari Spreadsheet.", err);
       }
