@@ -25,9 +25,14 @@
 </head>
 <body class="bg-slate-900 text-white font-sans select-none overflow-hidden h-screen w-screen flex flex-col">
 
-  <!-- AUDIO BACKSOUND GITHUB -->
+  <!-- AUDIO BACKSOUND GAME (LOOP) -->
   <audio id="bgm" loop preload="auto">
       <source src="mp3.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- AUDIO POPUP HASIL SESI (TANPA LOOP) -->
+  <audio id="popupSound" preload="auto">
+      <source src="sound.mp3" type="audio/mpeg">
   </audio>
 
   <!-- MODAL CATATAN MATERI (DINAMIS DARI SPREADSHEET) -->
@@ -215,6 +220,7 @@
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const bgm = document.getElementById('bgm');
+    const popupSound = document.getElementById('popupSound');
 
     function playSound(freq, duration) {
       try {
@@ -244,6 +250,22 @@
       try {
         bgm.pause();
         bgm.currentTime = 0;
+      } catch(e) {}
+    }
+
+    function playPopupSound() {
+      try {
+        popupSound.pause();
+        popupSound.currentTime = 0;
+        popupSound.loop = false;
+        popupSound.play().catch(e => console.log("Popup sound dicegah browser:", e));
+      } catch(e) {}
+    }
+
+    function stopPopupSound() {
+      try {
+        popupSound.pause();
+        popupSound.currentTime = 0;
       } catch(e) {}
     }
 
@@ -442,6 +464,7 @@
 
     function bukaPersiapanSesi() {
       stopBGM();
+      stopPopupSound();
       if (kelompokSementara.length === 0) {
         if (siswaAntrean.length === 0) {
           alert("Semua antrean siswa habis! Menampilkan papan peringkat server.");
@@ -522,7 +545,7 @@
         langkah: 0,
         benar: 0,
         totalJawab: 0,
-        waktuSelesai: null, // Mencatat waktu tepat saat pemain FINISH atau GUGUR
+        waktuSelesai: null,
         soalDipakai: [...bankSoal].sort(() => Math.random() - 0.5),
         soalIndex: 0
       }));
@@ -610,7 +633,6 @@
 
     function jawabSoal(playerIdx, optIdx) {
       let p = pemainAktif[playerIdx];
-      // Abaikan jika pemain sudah selesai atau gugur
       if (p.langkah >= 15 || p.totalJawab >= 25) return;
 
       let currentSoal = p.soalDipakai[p.soalIndex];
@@ -625,7 +647,6 @@
         playSound(200, 0.2);
       }
 
-      // Simpan detik penyelesaian saat pemain baru saja FINISH atau GUGUR
       if ((p.langkah >= 15 || p.totalJawab >= 25) && p.waktuSelesai === null) {
         p.waktuSelesai = 480 - waktuDetik;
       }
@@ -716,10 +737,13 @@
     }
 
     function tampilkanPopUpHasilSesi(dataSesi) {
-      // Urutkan peringkat sesi ini: Skor Tertinggi -> Jumlah Jawab -> Waktu Tercepat
+      // Bunyikan sound.mp3 (sekali putar, tanpa loop) saat pop-up hasil muncul
+      playPopupSound();
+
+      // Urutkan peringkat sesi ini: Yang tidak gugur di atas -> Jumlah Benar Tertinggi -> Waktu Tercepat
       let rankingSesi = [...dataSesi].sort((a, b) => {
-        if (b.skorAkhir !== a.skorAkhir) return b.skorAkhir - a.skorAkhir;
-        if (b.totalJawab !== a.totalJawab) return b.totalJawab - a.totalJawab;
+        if (a.isGugur !== b.isGugur) return a.isGugur ? 1 : -1;
+        if (b.benar !== a.benar) return b.benar - a.benar;
         return a.waktuDetik - b.waktuDetik;
       });
 
@@ -776,6 +800,7 @@
     }
 
     function lanjutSetelahHasilSesi() {
+      stopPopupSound();
       const modal = document.getElementById("hasilSesiModal");
       modal.classList.remove("flex");
       modal.classList.add("hidden");
@@ -805,6 +830,7 @@
       isGameRunning = false;
       clearInterval(timerInterval);
       stopBGM();
+      stopPopupSound();
       tampilkanLeaderboard();
     }
 
