@@ -648,7 +648,7 @@
       }
 
       if ((p.langkah >= 15 || p.totalJawab >= 25) && p.waktuSelesai === null) {
-        p.waktuSelesai = 480 - waktuDetik;
+        p.waktuSelesai = 600 - waktuDetik;
       }
 
       p.soalIndex = (p.soalIndex + 1) % p.soalDipakai.length;
@@ -663,7 +663,7 @@
 
     function startTimer() {
       clearInterval(timerInterval);
-      waktuDetik = 480; // 8 Menit
+      waktuDetik = 600; // 8 Menit
       updateTimerDisplay();
 
       timerInterval = setInterval(() => {
@@ -712,7 +712,7 @@
           tampilSkor = `${p.benar}`;
         }
 
-        let durasiDetik = p.waktuSelesai !== null ? p.waktuSelesai : (480 - waktuDetik);
+        let durasiDetik = p.waktuSelesai !== null ? p.waktuSelesai : (600 - waktuDetik);
 
         return {
           nama: p.nama,
